@@ -3,10 +3,10 @@ project(mytrim)
 
 # build the mytrim library
 # put install prefix somehow into config file
-set( DATA_INSTALL${DATA_INSTALL}/data )
+set( DATA_INSTALL ${CMAKE_SOURCE_DIR}/data )
 set( DATA_DIR ${DATA_INSTALL} )
 configure_file( ${CMAKE_SOURCE_DIR}/config.h.cmake ${CMAKE_SOURCE_DIR}/config.h )
-add_library(mytrim invert.cc element.cc material.cc sample.cc ion.cc trim.cc simconf.cc sample_clusters.cc sample_solid.cc sample_wire.cc sample_burried_wire.cc sample_layers.cc sample_dynamic.cc)
+add_library(mytrim invert.cc element.cc material.cc sample.cc ion.cc trim.cc simconf.cc sample_clusters.cc)
 install(TARGETS mytrim ARCHIVE DESTINATION lib)
 install(FILES simconf.h element.h material.h ion.h trim.h invert.h sample.h DESTINATION include/mytrim)
 install(FILES sample_clusters.h DESTINATION include/mytrim)
