@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
   simconf->fueltype = argv[2];
   simconf->makeRecoils = false;
   simconf->BoundaryFix = false;
-  simconf->AddAndKills = false;
+  simconf->AddAndKill  = false;
   
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
   sampleClusters *sample = new sampleClusters( length, length, length, bounds );
