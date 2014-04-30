@@ -354,8 +354,6 @@ int main(int argc, char *argv[])
           if( pka->escapee )
           {
             escNum++;
-            if( fromcenter[1] < r )
-              backInNum++;
             if( save_escFile )
             {
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
