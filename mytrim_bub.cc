@@ -42,8 +42,8 @@
 #include "functions.h"
 
 
-//different brahnch?
-
+//different branch test
+cout << "Different Branch test!" << endl;
 
 
 
