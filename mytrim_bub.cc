@@ -42,8 +42,7 @@
 #include "functions.h"
 
 
-//different branch test
-cout << "Different Branch test!" << endl;
+
 
 
 
@@ -51,6 +50,11 @@ int main(int argc, char *argv[])
 // argc = num of arguments at command line, including exe name,
 // argv = pointer to supplied arguments
 {
+  
+  //different branch test
+  std::cout << "Different Branch test!" << std::endl;
+  
+  
   time_t tstart, tend;
   tstart = time(0);
   
