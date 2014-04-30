@@ -3,12 +3,9 @@
 #include "ion.h"
 
 ionBase::ionBase()
-{ 
-  ef = 5.0; // final energy
+{
   t = 0.0; //clock
-  pass = 0;
-  punch = 0;
-  escapee = false;
+  reset();
 }
 
 ionBase::ionBase( ionBase* prototype )
@@ -18,15 +15,13 @@ ionBase::ionBase( ionBase* prototype )
   z1 = prototype->z1; // atomic number
   m1 = prototype->m1; // mass
   e = prototype->e;   // energy
-  pass = 0;
-  punch = 0;
+  reset();
 }
 
 ionBase::ionBase( int _z1, double _m1, double _e ) : z1(_z1), m1(_m1), e(_e)
 {
-  ef = 5.0; // final energy
   t = 0.0; //clock
-  escapee = false;
+  reset();
 }
 
 void ionBase::set_ef()
@@ -34,14 +29,23 @@ void ionBase::set_ef()
   ef = fmax( 5.0, 0.00001 * e ); // final energy -> either 5 or 0.00001 e
 }
 
+void ionBase::reset()
+{
+  pass = 0;
+  punch = 0;
+  escapee = false;
+  ef = 5.0;
+  Ehit = 0;
+  Eout = 0;
+  Eend = 0;
+}
+
 void ionBase::parent( ionBase *parent )
 {
-  ef = 5.0; // final energy
-
+  reset();
   gen = parent->gen + 1;
   t = parent->t;
   famtree = parent->famtree; // inhereits family tree
-  escapee = false;
 
   for( int i = 0; i < 3; i++ )
   {
