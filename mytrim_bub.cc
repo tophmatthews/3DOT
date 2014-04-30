@@ -323,6 +323,7 @@ int main(int argc, char *argv[])
         }
 
         trim->trim( pka, recoils );
+        
       
         // -- post-cascade ion analysis/processing -- //
         
@@ -345,7 +346,6 @@ int main(int argc, char *argv[])
         if( pka->tag >= 0 )
         {
           hitNum++;
-        
           // calculate distance from center to final position
           for( int i = 0; i < 3; i++ )
             dif[i] = sample->c[i][pka->tag] - pka->pos[i];
@@ -360,12 +360,11 @@ int main(int argc, char *argv[])
             fprintf( hitFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
             fprintf( hitFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
             fprintf( hitFile, "[ ");
-            for( int i = 0; i < pka->elist.size(); i++ )
-              fprintf( hitFile, "%.1f ", pka->elist.at(i));
-            fprintf(hitFile, "]\t[ ");
+            fprintf( hitFile, "%.2f\t%.2f\t%.2f", pka->Ehit, pka->Eout, pka->Eend);
+            fprintf( hitFile, " ]\t[ ");
             for( int i = 0; i < pka->famtree.size(); i++ )
               fprintf( hitFile, "%i ", pka->famtree.at(i));
-            fprintf( hitFile, "]\t" );
+            fprintf( hitFile, "] ");
             fprintf( hitFile,"%s", inbubble( sample->w, pka->pos, r)? "in " : "out");
             fprintf( hitFile, "\n");
           }
@@ -380,12 +379,11 @@ int main(int argc, char *argv[])
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
               fprintf( escFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
               fprintf( escFile, "[ ");
-              for( int i = 0; i < pka->elist.size(); i++ )
-                fprintf( escFile, "%.1f ", pka->elist.at(i));
-              fprintf(escFile, "]\t[ ");
+              fprintf( escFile, "%.2f\t%.2f\t%.2f", pka->Ehit, pka->Eout, pka->Eend);
+              fprintf(escFile, " ]\t[ ");
               for( int i = 0; i < pka->famtree.size(); i++ )
                 fprintf( escFile, "%i ", pka->famtree.at(i));
-              fprintf( escFile, "]\t" );
+              fprintf( escFile, "] ");
               fprintf( escFile,"%s", inbubble( sample->w, pka->pos, r)? "in " : "out");
               fprintf( escFile, "\n");
             }
