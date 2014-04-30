@@ -12,8 +12,8 @@ struct ionBase {
   int pass;  // # times through box
   int punch; // # times through bubble
   bool escapee;
+  double Ehit, Eout, Eend;
   
-  std::vector<double> elist; // list of energy of ion at transition
   std::vector<int> famtree; // family tree of ion
 
   int tag, gen;
@@ -31,6 +31,7 @@ struct ionBase {
   virtual ionBase* spawnRecoil();
 
   void set_ef();
+  void reset();
 };
 
 #endif
