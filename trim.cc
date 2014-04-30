@@ -144,10 +144,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       
       if( pka->tag >= 0 )
       {
-        double escapeeng = -1 * pka->e * u[0]/abs(u[0]);
-        pka->elist.push_back( escapeeng ); // set transition energy. + is leaving, - is entering
-        if( escapeeng > 0 )
-          pka->escapee = true;
+        pka->escapee = true;
+        if( pka->Eout == 0 )
+          pka->Eout = pka->e; // set transition energy. + is leaving, - is entering
       }
 
       pl += ls; // add travel length to total path length
@@ -372,7 +371,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         recoil->tag = material->tag; // mark where new recoil was birthed
         
         if( recoil->tag >= 0 )
-          recoil->elist.push_back( recoil->e );
+          recoil->Ehit = recoil->e;
 
         if( pka->md > 0 ) recoil->md = pka->md +1; // if pka is in range, mark recoil +1
         else recoil->md = 0;
@@ -398,7 +397,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   } while ( pka->e > pka->ef && !terminate );
   
   if( pka->tag >= 0 )
-    pka->elist.push_back( pka->e );
+    pka->Eend = pka->e;
   pka->travel = pl;
   if( simconf->fullTraj && pka->tag >= 0 ) printf( "\n" );
   if( simconf->fullTraj ) printf("particle killed \n\n");
