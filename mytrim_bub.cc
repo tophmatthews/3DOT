@@ -28,7 +28,6 @@
 #include <queue>
 #include <ctime>
 #include <iostream>
-//#include <string>
 
 #include "simconf.h"
 #include "element.h"
@@ -38,23 +37,10 @@
 #include "trim.h"
 #include "invert.h"
 #include "sample.h"
-
 #include "functions.h"
 
-
-
-
-
-
 int main(int argc, char *argv[])
-// argc = num of arguments at command line, including exe name,
-// argv = pointer to supplied arguments
 {
-  
-  //different branch test
-  std::cout << "Different Branch test!" << std::endl;
-  
-  
   time_t tstart, tend;
   tstart = time(0);
   
@@ -73,7 +59,6 @@ int main(int argc, char *argv[])
   bool save_escFile   = true;
   bool save_rangeFile = false;
   
-  char fname[200];
   if( argc != 6 ) // check if arguments are passed
   {
     fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype");
@@ -206,42 +191,40 @@ int main(int argc, char *argv[])
   int Z1, Z2;
 
   // File creation
-  FILE * infoFile = NULL;
-  FILE * hitFile = NULL;
-  FILE * escFile = NULL;
-  FILE * fsnFile = NULL;
-  FILE * rangeFile = NULL;
   
-  if( save_infoFile )
-  {
-    snprintf( fname, 199, "output/temp/%s.%s-%s.info" , argv[1], argv[2], argv[3] );
-    infoFile = fopen( fname, "wt" );
-  }
-
+  FILE * hitFile = NULL;
   if( save_hitFile )
   {
+    char fname[200];
     snprintf( fname, 199, "output/temp/%s.%s-%s.hit" , argv[1], argv[2], argv[3] );
     hitFile = fopen( fname, "wt");
   }
 
+  FILE * escFile = NULL;
   if( save_escFile )
   {
+    char fname[200];
     snprintf( fname, 199, "output/temp/%s.%s-%s.esc" , argv[1], argv[2], argv[3] );
     escFile = fopen( fname, "wt");
   }
   
+  FILE * fsnFile = NULL;
   if( save_fsnFile )
   {
+    char fname[200];
     snprintf( fname, 199, "output/temp/%s.%s-%s.fsn" , argv[1], argv[2], argv[3] );
     fsnFile = fopen( fname, "wt");
   }
   
+  FILE * rangeFile = NULL;
   if( save_rangeFile)
   {
+    char fname[200];
     snprintf( fname, 199, "output/temp/%s.%s-%s.range" , argv[1], argv[2], argv[3] );
     rangeFile = fopen( fname, "wt");
   }
 
+  
   // Start fissions
   for( int n = 1; n <= fissions; n++ )
   {
@@ -369,12 +352,11 @@ int main(int argc, char *argv[])
             fprintf( hitFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
             fprintf( hitFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
             fprintf( hitFile, "[ ");
-            fprintf( hitFile, "%.2f\t%.2f\t%.2f", pka->Ehit, pka->Eout, pka->Eend);
+            fprintf( hitFile, "%.2f %.2f %.2f", pka->Ehit, pka->Eout, pka->Eend);
             fprintf( hitFile, " ]\t[ ");
             for( int i = 0; i < pka->famtree.size(); i++ )
               fprintf( hitFile, "%i ", pka->famtree.at(i));
-            fprintf( hitFile, "] ");
-            fprintf( hitFile,"%s", inbubble( sample->w, pka->pos, r)? "in " : "out");
+            fprintf( hitFile, "]");
             fprintf( hitFile, "\n");
           }
         
@@ -388,12 +370,11 @@ int main(int argc, char *argv[])
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
               fprintf( escFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
               fprintf( escFile, "[ ");
-              fprintf( escFile, "%.2f\t%.2f\t%.2f", pka->Ehit, pka->Eout, pka->Eend);
+              fprintf( escFile, "%.2f %.2f %.2f", pka->Ehit, pka->Eout, pka->Eend);
               fprintf(escFile, " ]\t[ ");
               for( int i = 0; i < pka->famtree.size(); i++ )
                 fprintf( escFile, "%i ", pka->famtree.at(i));
-              fprintf( escFile, "] ");
-              fprintf( escFile,"%s", inbubble( sample->w, pka->pos, r)? "in " : "out");
+              fprintf( escFile, "]");
               fprintf( escFile, "\n");
             }
           }// done with escaped fg data
@@ -414,34 +395,8 @@ int main(int argc, char *argv[])
     
   } // End of all fissions
 
-  // output infoFile data
-  tend = time(0);
+  tend = time(0); // output infoFile data
   
-  if( save_infoFile )
-  {
-    fprintf( infoFile, "General info on the run\n");
-    fprintf( infoFile, "Number of fissions:\t%.0f\n", fissions);
-    fprintf( infoFile, "Simulation time [s]:\t%.0f\n", difftime(tend,tstart));
-    fprintf( infoFile, "Length of problem [nm]:\t%.1f\n\n", length);
-    fprintf( infoFile, "Bubble Center [nm]:\t%.1f %.1f %.1f\n", sample->w[0]/2,sample->w[1]/2,sample->w[2]/2);
-    fprintf( infoFile, "Bubble Radius [nm]:\t%.1f\n", r);
-    fprintf( infoFile, "Atom density in bubble [atoms/nm^3]:\t%.4f\n\n", bub_rho);
-    fprintf( infoFile, "Number of ions per fission:\t%.2f +-\t%.2f\n", avg(ionIdList), stdev(ionIdList));
-    fprintf( infoFile, "Number of escaped ions per fission:\t%.2f +-\t%.2f\n\n", avg(escList), stdev(escList));
-    fprintf( infoFile, "Run start time: %s", ctime (&tstart));
-    fprintf( infoFile, "Build time: %s %s\n\n", buildtime.c_str(), builddate.c_str());
-    
-    fprintf( infoFile, "File .ion: Detailed info on the ions\n");
-    fprintf( infoFile, "ionId | Total travel distance | pos_0 to center of bub | pos_f to center of bub | Final pos x | y | z | exit energies | family tree | final pos in/out of bubble | escape energy\n\n");
-    
-    fprintf( infoFile, "File .esc: Detailed info on only ions that have escaped\n");
-    fprintf( infoFile, "ionId | Total travel distance | pos_0 to center of bub | pos_f to center of bub | Final pos x | y | z | exit energies | family tree | final pos in/out of bubble | escape energy\n\n");
-    
-    fprintf( infoFile, "File .fsn: Detailed info on the fissions\n");
-    fprintf( infoFile, "fsn # | FF1: Atomic number | Mass | Energy | FF2: Atomic number | Mass | Energy | Number of ions | Number of gas atoms hit | number of gas atoms escaped");
-  }
-  
-  if( save_infoFile ) fclose( infoFile );
   if( save_hitFile ) fclose( hitFile );
   if( save_escFile ) fclose( escFile );
   if( save_fsnFile ) fclose( fsnFile );
