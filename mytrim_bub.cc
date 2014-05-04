@@ -351,9 +351,8 @@ int main(int argc, char *argv[])
           {
             fprintf( hitFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
             fprintf( hitFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
+            fprintf( hitFile, "%.2f\t%.2f\t%.2f\t", pka->Ehit, pka->Eout, pka->Eend);
             fprintf( hitFile, "[ ");
-            fprintf( hitFile, "%.2f %.2f %.2f", pka->Ehit, pka->Eout, pka->Eend);
-            fprintf( hitFile, " ]\t[ ");
             for( int i = 0; i < pka->famtree.size(); i++ )
               fprintf( hitFile, "%i ", pka->famtree.at(i));
             fprintf( hitFile, "]");
@@ -369,9 +368,8 @@ int main(int argc, char *argv[])
             {
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
               fprintf( escFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
-              fprintf( escFile, "[ ");
-              fprintf( escFile, "%.2f %.2f %.2f", pka->Ehit, pka->Eout, pka->Eend);
-              fprintf(escFile, " ]\t[ ");
+              fprintf( escFile, "%.2f\t%.2f\t%.2f\t", pka->Ehit, pka->Eout, pka->Eend);
+              fprintf(escFile, "[ ");
               for( int i = 0; i < pka->famtree.size(); i++ )
                 fprintf( escFile, "%i ", pka->famtree.at(i));
               fprintf( escFile, "]");
