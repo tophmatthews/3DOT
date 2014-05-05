@@ -8,7 +8,7 @@ ionBase::ionBase()
   reset();
 }
 
-ionBase::ionBase( ionBase* prototype )
+ionBase::ionBase( ionBase* prototype ) // copy constructor
 { 
   ef = prototype->ef; // final energy
   t = prototype->t;   // clock
@@ -37,7 +37,15 @@ void ionBase::reset()
   ef = 5.0;
   Ehit = 0;
   Eout = 0;
-  Eend = 0;
+}
+
+void ionBase::prep_FF()
+{
+  gen = 0;
+  fam_fuel = 0;
+  fam_fg = 0;
+  tag = -1; // -1 = born in fuel
+  md = 0;
 }
 
 void ionBase::parent( ionBase *parent )
@@ -45,8 +53,22 @@ void ionBase::parent( ionBase *parent )
   reset();
   gen = parent->gen + 1;
   t = parent->t;
+  
   famtree = parent->famtree; // inhereits family tree
+  fam_parent = parent->z1;
+  famtree.push_back( parent->z1 ); // add parent to family tree
 
+  fam_fuel = parent->fam_fuel;
+  fam_fg = parent->fam_fg;
+  
+  if( fam_parent >= 90 || fam_parent <= 10 )
+    ++fam_fuel;
+  else
+  {
+    if( gen > 0 )
+      ++fam_fg;
+  }
+  
   for( int i = 0; i < 3; i++ )
   {
     pos[i] = parent->pos[i];

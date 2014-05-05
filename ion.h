@@ -12,7 +12,8 @@ struct ionBase {
   int pass;  // # times through box
   int punch; // # times through bubble
   bool escapee;
-  double Ehit, Eout, Eend;
+  double Ehit, Eout;
+  int fam_fuel, fam_fg, fam_parent;
   
   std::vector<int> famtree; // family tree of ion
 
@@ -32,6 +33,7 @@ struct ionBase {
 
   void set_ef();
   void reset();
+  void prep_FF();
 };
 
 #endif
