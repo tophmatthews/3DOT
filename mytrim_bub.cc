@@ -349,8 +349,8 @@ int main(int argc, char *argv[])
           if( save_hitFile )
           {
             fprintf( hitFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
-            fprintf( hitFile, "%.1f\t%.1f\t%.1f\t", fromcenter[0], fromcenter[1], pka->travel);
-            fprintf( hitFile, "%.1f\t%.1f\t", pka->Ehit, pka->Eout);
+            fprintf( hitFile, "%i\t%i\t%i\t", int(fromcenter[0]+ 0.5), int(fromcenter[1] + 0.5), int(pka->travel+0.5));
+            fprintf( hitFile, "%i\t%i\t", int(pka->Ehit + 0.5), int(pka->Eout + 0.5));
             fprintf( hitFile, "%i\t%i\t%i", pka->fam_fuel, pka->fam_fg, pka->fam_parent);
             fprintf( hitFile, "\n");
           }
@@ -363,8 +363,8 @@ int main(int argc, char *argv[])
             if( save_escFile )
             {
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
-              fprintf( escFile, "%.1f\t%.1f\t%.1f\t", fromcenter[0], fromcenter[1], pka->travel);
-              fprintf( escFile, "%.1f\t%.1f\t", pka->Ehit, pka->Eout);
+              fprintf( escFile, "%i\t%i\t%i\t", int(fromcenter[0]+ 0.5), int(fromcenter[1] + 0.5), int(pka->travel+0.5));
+              fprintf( escFile, "%i\t%i\t", int(pka->Ehit + 0.5), int(pka->Eout + 0.5));
               fprintf( escFile, "%i\t%i\t%i", pka->fam_fuel, pka->fam_fg, pka->fam_parent);
               fprintf( escFile, "\n");
             }
