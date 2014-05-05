@@ -19,7 +19,7 @@ install(FILES data/SCOEF.95A data/SLFCTR.dat data/SNUC03.dat data/ELNAME.dat DES
 
 # build the test trim programs
 #set(PROGRAMS mytrim_ODS mytrim_clusters mytrim_layers mytrim_solid mytrim_solid2 mytrim_uo2 mytrim_wire mytrim_dynamic mytrim_wire2 mytrim_bobmsq mytrim_uc mytrim_hit)
-set(PROGRAMS mytrim_bub mytrim_range mytrim_nobub )
+set(PROGRAMS mytrim_bub mytrim_range )
 foreach(program ${PROGRAMS})
   add_executable(${program} ${program}.cc)
   target_link_libraries(${program}  mytrim m)
