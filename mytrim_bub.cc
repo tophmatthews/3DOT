@@ -237,9 +237,10 @@ int main(int argc, char *argv[])
     
     // -- Spawn fission fragments -- //
     ff1 = new ionBase;
-    ff1->gen = 0;  // generation (0 = FF)
-    ff1->tag = -1; // -1 = born in fuel
-    ff1->md = 0;
+//    ff1->gen = 0;  // generation (0 = FF)
+//    ff1->tag = -1; // -1 = born in fuel
+//    ff1->md = 0;
+    ff1->prep_FF();
 
     // generate fission fragment data
     A1 = m->x( dr250() ); // Randomize first mass from double hump probability
@@ -281,7 +282,6 @@ int main(int argc, char *argv[])
     ff2->m1 = A2;
     ff2->e  = E2 * 1.0e6;
     
-    //ff2->set_ef(); // this is used to set minimum energy to 5.0 eV or 1e-5 or original energy
     ff2->ionId = simconf->ionId++;
     recoils.push( ff2 );
 
@@ -315,7 +315,6 @@ int main(int argc, char *argv[])
         }
 
         trim->trim( pka, recoils );
-        
       
         // -- post-cascade ion analysis/processing -- //
         
@@ -350,12 +349,9 @@ int main(int argc, char *argv[])
           if( save_hitFile )
           {
             fprintf( hitFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
-            fprintf( hitFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
-            fprintf( hitFile, "%.2f\t%.2f\t%.2f\t", pka->Ehit, pka->Eout, pka->Eend);
-            fprintf( hitFile, "[ ");
-            for( int i = 0; i < pka->famtree.size(); i++ )
-              fprintf( hitFile, "%i ", pka->famtree.at(i));
-            fprintf( hitFile, "]");
+            fprintf( hitFile, "%.1f\t%.1f\t%.1f\t", fromcenter[0], fromcenter[1], pka->travel);
+            fprintf( hitFile, "%.1f\t%.1f\t", pka->Ehit, pka->Eout);
+            fprintf( hitFile, "%i\t%i\t%i", pka->fam_fuel, pka->fam_fg, pka->fam_parent);
             fprintf( hitFile, "\n");
           }
         
@@ -367,12 +363,9 @@ int main(int argc, char *argv[])
             if( save_escFile )
             {
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
-              fprintf( escFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
-              fprintf( escFile, "%.2f\t%.2f\t%.2f\t", pka->Ehit, pka->Eout, pka->Eend);
-              fprintf(escFile, "[ ");
-              for( int i = 0; i < pka->famtree.size(); i++ )
-                fprintf( escFile, "%i ", pka->famtree.at(i));
-              fprintf( escFile, "]");
+              fprintf( escFile, "%.1f\t%.1f\t%.1f\t", fromcenter[0], fromcenter[1], pka->travel);
+              fprintf( escFile, "%.1f\t%.1f\t", pka->Ehit, pka->Eout);
+              fprintf( escFile, "%i\t%i\t%i", pka->fam_fuel, pka->fam_fg, pka->fam_parent);
               fprintf( escFile, "\n");
             }
           }// done with escaped fg data
@@ -384,8 +377,8 @@ int main(int argc, char *argv[])
     if( save_fsnFile )
     {
       fprintf(fsnFile, "%i\t", n);
-      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.3f\t", Z1, E1, pass[0], punch[0], path[0]);
-      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.3f\t", Z2, E2, pass[1], punch[1], path[1]);
+      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", Z1, E1, pass[0], punch[0], path[0]);
+      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", Z2, E2, pass[1], punch[1], path[1]);
       fprintf(fsnFile, "%li\t%i\t%i\t%i\n", simconf->ionId - oldionId, hitNum, escNum, backInNum);
     }
     escList.push_back(escNum);
@@ -399,7 +392,10 @@ int main(int argc, char *argv[])
   if( save_escFile ) fclose( escFile );
   if( save_fsnFile ) fclose( fsnFile );
   if( save_rangeFile ) fclose( rangeFile );
-
+  
+  
+  
+  
   printf( "==+== %s.%s-%s Finished ==+==\n", argv[1], argv[2], argv[3] );
   printf( "Simulation time [s]:\t%.0f\n", difftime(tend,tstart));
   return EXIT_SUCCESS;

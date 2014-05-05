@@ -341,13 +341,8 @@ int main(int argc, char *argv[])
           {
             fprintf( hitFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
             fprintf( hitFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
-            fprintf( hitFile, "[ ");
-            fprintf( hitFile, "%.2f\t%.2f\t%.2f", pka->Ehit, pka->Eout, pka->Eend);
-            fprintf( hitFile, " ]\t[ ");
-            for( int i = 0; i < pka->famtree.size(); i++ )
-              fprintf( hitFile, "%i ", pka->famtree.at(i));
-            fprintf( hitFile, "] ");
-            fprintf( hitFile,"%s", inbubble( sample->w, pka->pos, r)? "in " : "out");
+            fprintf( hitFile, "%.2f\t%.2f\t", pka->Ehit, pka->Eout);
+            fprintf( hitFile, "%i\t%i\t%i", pka->fam_fuel, pka->fam_fg, pka->fam_parent);
             fprintf( hitFile, "\n");
           }
           
@@ -358,13 +353,8 @@ int main(int argc, char *argv[])
             {
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
               fprintf( escFile, "%.4f\t%.4f\t%.2f\t", fromcenter[0], fromcenter[1], pka->travel);
-              fprintf( escFile, "[ ");
-              fprintf( escFile, "%.2f\t%.2f\t%.2f", pka->Ehit, pka->Eout, pka->Eend);
-              fprintf(escFile, " ]\t[ ");
-              for( int i = 0; i < pka->famtree.size(); i++ )
-                fprintf( escFile, "%i ", pka->famtree.at(i));
-              fprintf( escFile, "] ");
-              fprintf( escFile,"%s", inbubble( sample->w, pka->pos, r)? "in " : "out");
+              fprintf( escFile, "%.2f\t%.2f\t", pka->Ehit, pka->Eout);
+              fprintf( escFile, "%i\t%i\t%i", pka->fam_fuel, pka->fam_fg, pka->fam_parent);
               fprintf( escFile, "\n");
             }
           }// done with escaped fg data
