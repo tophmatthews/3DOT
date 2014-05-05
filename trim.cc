@@ -357,7 +357,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         if( simconf->fullTraj )
           printf( "e: %f  ls: %f dir: %f %f %f\n", pka->e, ls, pka->dir[0], pka->dir[1], pka->dir[2]);
         pl += ls; // add travel length to total pka path length
-        for( int i = 0; i < 3; i++ )
+        for( int i = 0; i < 3; ++i )
           pka->pos[i] += pka->dir[i] * ls;
         
         if( simconf->fullTraj )
@@ -373,11 +373,11 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         if( recoil->tag >= 0 )
           recoil->Ehit = recoil->e;
 
-        if( pka->md > 0 ) recoil->md = pka->md +1; // if pka is in range, mark recoil +1
+        if( pka->md > 0 ) recoil->md = pka->md + 1; // if pka is in range, mark recoil +1
         else recoil->md = 0;
         
-        recoil->ionId = simconf->ionId++;           // set new id
-        recoil->famtree.push_back( pka->z1 ); // add parent to family tree
+        recoil->ionId = simconf->ionId++;     // set new id then add
+        
         recoils.push( recoil );               // add recoil to stack
         
         if( simconf->fullTraj )
@@ -396,8 +396,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     } // endif for Rangefix == false
   } while ( pka->e > pka->ef && !terminate );
   
-  if( pka->tag >= 0 )
-    pka->Eend = pka->e;
   pka->travel = pl;
   if( simconf->fullTraj && pka->tag >= 0 ) printf( "\n" );
   if( simconf->fullTraj ) printf("particle killed \n\n");
