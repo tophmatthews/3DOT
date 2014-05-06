@@ -61,13 +61,13 @@ void ionBase::parent( ionBase *parent )
   fam_fuel = parent->fam_fuel;
   fam_fg = parent->fam_fg;
   
-  if( fam_parent >= 90 || fam_parent <= 10 )
-    ++fam_fuel;
-  else
+  if( fam_parent <= 90 && fam_parent >= 10 )
   {
-    if( gen > 0 )
+    if( gen > 1 )
       ++fam_fg;
   }
+  else
+    ++fam_fuel;
   
   for( int i = 0; i < 3; i++ )
   {
