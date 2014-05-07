@@ -273,7 +273,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
           bool wrapped = false;
           if (pka->pos[i] < 0) // fix for negative values
           {
-            if( pka->gen != 0 && simconf->AddAndKill )
+            if( pka->tag >= 0 && simconf->AddAndKill )
               edged = true;
             else
             {
@@ -290,7 +290,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
           
           else if (pka->pos[i] > sample->w[i]) // fix for values past box wall
           {
-            if( pka->gen != 0 && simconf->AddAndKill )
+            if( pka->tag >= 0 && simconf->AddAndKill )
               edged = true;
             else
             {
