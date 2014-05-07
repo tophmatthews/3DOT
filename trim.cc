@@ -23,7 +23,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   // make recoil queue available in overloadable functions
   recoil_queue_ptr = &recoils;
 
-  double pl = 0.0;
   double max = 0.0;
   double e0kev = pka->e / 1000.0;
   int ic = 0;
@@ -48,9 +47,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   
   double p1, p2;
   double range;
-  
-  double wrap; //fix for periodic boundary conditions
-  bool wrapped;
 
   // Constants for universal potentail, from [SRIM table 4-1]
   double u_c1 = 0.99229;
@@ -149,7 +145,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
           pka->Eout = pka->e; // set transition energy. + is leaving, - is entering
       }
 
-      pl += ls; // add travel length to total path length
+      pka->travel += ls; // add travel length to total path length
       
       for( int i = 0; i < 3; i++ )
         pka->pos[i] += ls * pka->dir[i]; // update position
@@ -257,68 +253,63 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 
       if( dee > max ) max = dee;
 
-      pl += ls; // add travel length to total pka path length
+      pka->travel += ls; // add travel length to total pka path length
 
-      for( int i = 0; i < 3; i++ ) pka->pos[i] += pka->dir[i] * ls ;
+      for( int i = 0; i < 3; ++i )
+        pka->pos[i] += pka->dir[i] * ls ;
       
       recoil = pka->spawnRecoil();
       
-      for( int i = 0; i < 3; i++ ) // progress ion
+      for( int i = 0; i < 3; ++i ) // progress ion
       {
-        // used to assign the new position to the recoil, but
-        // we have to make sure the recoil starts in the appropriate material!
-        //pka->pos[i] += pka->dir[i] * ( ls - simconf->tau ); // advance pka position
         recoil->dir[i] = pka->dir[i] * p1; // initial pka momentum vector
         
-        // Fix for Periodic boundary condtions
-        wrapped = false;
+        // Fix for BC
+        
         if( sample->bc[i] == sampleBase::CUT && ( pka->pos[i] > sample->w[i] || pka->pos[i] < 0.0 ) )
           terminate = true;
         else if ( sample->bc[i] == sampleBase::PBC )
         {
+          bool wrapped = false;
           if (pka->pos[i] < 0) // fix for negative values
           {
-            if( pka->gen != 0 )
-            {
-              if( simconf->AddAndKill )
-                edged = true;// PBC for non-FF: move it and kill it
-            }
+            if( pka->gen != 0 && simconf->AddAndKill )
+              edged = true;
             else
             {
               pka->pos[i] += sample->w[i];
               wrapped = true;
               if (pka->pos[i] < 0) // protection for too big a box, negative direction
               {
-                printf("Failure in Trim.cc: simulation box. PKA wrapped around box in negative direction\n" );
+                printf("Failure in Trim.cc: simulation box too small. FF wrapped around box in negative direction\n" );
                 printf("dim: %i pos: %f w: %f\n", i, pka->pos[i], sample->w[i]);
                 exit (EXIT_FAILURE);
               }
             }
           }
           
-          if (pka->pos[i] > sample->w[i]) // fix for values past box wall
+          else if (pka->pos[i] > sample->w[i]) // fix for values past box wall
           {
-            if( pka->gen != 0 )
-            {
-              if( simconf->AddAndKill )
-                edged = true;// PBC for non-FF: move it and kill it
-            }
-            wrap = floor( pka->pos[i] / sample->w[i] );
-            if (wrap > 1) // protection for too big a box
-            {
-              printf("Failure in Trim.cc: simulation box is too small\n" );
-              printf("wrap: %f dim: %i pos: %f w: %f\n", wrap, i, pka->pos[i], sample->w[i]);
-              exit (EXIT_FAILURE);
-            }
+            if( pka->gen != 0 && simconf->AddAndKill )
+              edged = true;
             else
             {
-              pka->pos[i] -= sample->w[i];
-              wrapped = true;
+              double wrap = floor( pka->pos[i] / sample->w[i] );
+              if (wrap > 1) // protection for too big a box
+              {
+                printf("Failure in Trim.cc: simulation box is too small. FF wrapped around box in positive direction\n" );
+                printf("wrap: %f dim: %i pos: %f w: %f\n", wrap, i, pka->pos[i], sample->w[i]);
+                exit (EXIT_FAILURE);
+              }
+              else
+              {
+                pka->pos[i] -= sample->w[i];
+                wrapped = true;
+              }
             }
-          }
-          if( wrapped )
-            pka->pass++;
-        } // End PBC fix
+          } // end positive boundary fix
+          if( wrapped ) pka->pass++;
+        } // end PBC fix
       }
       
       recoil->e = den;              // assign recoil energy
@@ -353,12 +344,15 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
           printf( "EDGED at pos: %f %f %f e: %f ls*u: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, ls );
         
         terminate = true;
-        ls = rangeInFuel( pka->e, simconf->fueltype );
+        double est_range = rangeInFuel( pka->e, simconf->fueltype );
         if( simconf->fullTraj )
           printf( "e: %f  ls: %f dir: %f %f %f\n", pka->e, ls, pka->dir[0], pka->dir[1], pka->dir[2]);
-        pl += ls; // add travel length to total pka path length
+        
+        // add travel length to total pka path length
+        // will not work well for total travel length, since this is actually range. But good enough!
+        pka->travel += est_range;
         for( int i = 0; i < 3; ++i )
-          pka->pos[i] += pka->dir[i] * ls;
+          pka->pos[i] += pka->dir[i] * est_range;
         
         if( simconf->fullTraj )
           printf( "Final pos: %f %f %f\n\n", pka->pos[0], pka->pos[1], pka->pos[2]);
@@ -373,11 +367,12 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         if( recoil->tag >= 0 )
           recoil->Ehit = recoil->e;
 
-        if( pka->md > 0 ) recoil->md = pka->md + 1; // if pka is in range, mark recoil +1
-        else recoil->md = 0;
+        if( pka->md > 0 )
+          recoil->md = pka->md + 1; // if pka is in range, mark recoil +1
+        else
+          recoil->md = 0;
         
         recoil->ionId = simconf->ionId++;     // set new id then add
-        
         recoils.push( recoil );               // add recoil to stack
         
         if( simconf->fullTraj )
@@ -394,9 +389,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       else delete recoil;
       
     } // endif for Rangefix == false
-  } while ( pka->e > pka->ef && !terminate );
+  } while( pka->e > pka->ef && !terminate );
   
-  pka->travel = pl;
   if( simconf->fullTraj && pka->tag >= 0 ) printf( "\n" );
   if( simconf->fullTraj ) printf("particle killed \n\n");
 }
