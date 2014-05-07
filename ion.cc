@@ -37,6 +37,7 @@ void ionBase::reset()
   ef = 5.0;
   Ehit = 0;
   Eout = 0;
+  travel = 0;
 }
 
 void ionBase::prep_FF()
@@ -50,13 +51,12 @@ void ionBase::prep_FF()
 
 void ionBase::parent( ionBase *parent )
 {
-  reset();
   gen = parent->gen + 1;
   t = parent->t;
   
   famtree = parent->famtree; // inhereits family tree
   fam_parent = parent->z1;
-  famtree.push_back( parent->z1 ); // add parent to family tree
+  famtree.push_back( fam_parent ); // add parent to family tree
 
   fam_fuel = parent->fam_fuel;
   fam_fg = parent->fam_fg;
