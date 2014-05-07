@@ -67,13 +67,6 @@ int main(int argc, char *argv[])
   
   printf( "==+== %s.%s-%s Started ==+==\n", argv[1], argv[2], argv[3] );
   
-  // Convert inputs to floats
-  
-  double r = atof( argv[2] ); // radius of bubble in A
-  double length = atof( argv[3] ); // size of box in A  
-  double fissions = atof( argv[4] ); // number of fissions to run
-  
-  
   // seed randomnumber generator from system entropy pool
   FILE *urand = fopen( "/dev/random", "r" );
   int seed;
@@ -83,8 +76,12 @@ int main(int argc, char *argv[])
 
   // initialize global parameter structure and read data tables from file
   simconf = new simconfType;
-  simconf->bub_rad = r;
+  simconf->bub_rad = atof( argv[2] );;
   simconf->fueltype = argv[5];
+  
+  // Convert inputs to floats
+  double length = atof( argv[3] ); // size of box in A
+  double fissions = atof( argv[4] ); // number of fissions to run
 
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
   sampleClusters *sample = new sampleClusters( length, length, length, bounds );
@@ -92,12 +89,12 @@ int main(int argc, char *argv[])
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
 
-  sample->initSpatialhash( int( sample->w[0] / r ) - 1,
-                           int( sample->w[1] / r ) - 1,
-                           int( sample->w[2] / r ) - 1 );
+  sample->initSpatialhash( int( sample->w[0] / simconf->bub_rad ) - 1,
+                           int( sample->w[1] / simconf->bub_rad ) - 1,
+                           int( sample->w[2] / simconf->bub_rad ) - 1 );
 
   // Add bubble in center of box
-  sample->addCluster( length/2, length/2, length/2, r);
+  sample->addCluster( length/2, length/2, length/2, simconf->bub_rad);
 
   materialBase *material;
   elementBase *element;
@@ -149,8 +146,10 @@ int main(int argc, char *argv[])
   
   // xe bubble
   double bub_rho;
-  if (calc_bub_rho) bub_rho = calc_rho(r, 132.0);
-  else bub_rho = 2.56; // [g/cc] solid xenon = 3.5
+  if (calc_bub_rho)
+    bub_rho = calc_rho(simconf->bub_rad, 132.0);
+  else
+    bub_rho = 2.56; // [g/cc] solid xenon = 3.5
   
   material = new materialBase( bub_rho );
   element = new elementBase;
@@ -168,20 +167,15 @@ int main(int argc, char *argv[])
   // create a FIFO for recoils
   queue<ionBase*> recoils;
 
-  vector<long int> escList;  // list of number of escapees per fission
-  vector<long int> ionIdList;   // list of number of ions per fission
-  double norm;
-  double pos1[3];       // initial position
-  double dif[3];        // vector from center of bubble to location
-  double fromcenter[2]; // distance of (initial/final) ion location from center of bubble
-  double path[2];       // path length of (ff1/ff2)
-  int oldionId;
-  int pass[2];          // # times (ff1/ff2) traverses length of problem
-  int punch[2];         // # times (ff1/ff2) hits bubble
-  int escNum;           // # times fg atoms is hit and escapes the bubble with minimum energy
-  int hitNum;           // # times fg atom is hit
-  int mixNum;           // # times fg escapes, ion traverses length of problem, and hits reflected bubble
-  int backInNum;        // # times fg escapes but is knocked back in directly
+  double norm;                   // used to determine direction
+  double pos1[3];                // initial position
+  double dif[3];                 // vector from center of bubble to location
+  double fromcenter[2];          // distance of (initial/final) ion location from center of bubble
+  double path[2];                // path length of (ff1/ff2)
+  int oldionId;                  // save for old ion id
+  int pass[2];                   // # times (ff1/ff2) traverses length of problem
+  int punch[2];                  // # times (ff1/ff2) hits bubble
+  int hitNum, escNum, backInNum; // # times fg atoms is hit/escapes/knocked back in
 
   massInverter *m = new massInverter;
   energyInverter *e = new energyInverter;
@@ -224,24 +218,15 @@ int main(int argc, char *argv[])
     rangeFile = fopen( fname, "wt");
   }
 
-  
   // Start fissions
-  for( int n = 1; n <= fissions; n++ )
+  for( int n = 1; n <= fissions; ++n )
   {
-    escNum = 0; // reset counters
+    // reset counters
+    escNum = 0;
     hitNum = 0;
-    mixNum = 0;
     backInNum = 0;
-    
     oldionId = simconf->ionId;
     
-    // -- Spawn fission fragments -- //
-    ff1 = new ionBase;
-//    ff1->gen = 0;  // generation (0 = FF)
-//    ff1->tag = -1; // -1 = born in fuel
-//    ff1->md = 0;
-    ff1->prep_FF();
-
     // generate fission fragment data
     A1 = m->x( dr250() ); // Randomize first mass from double hump probability
     A2 = 235.0 - A1;
@@ -251,42 +236,42 @@ int main(int argc, char *argv[])
     E2 = Etot - E1;
     Z1 = round( ( A1 * 92.0 ) / 235.0 );
     Z2 = 92 - Z1;
-
-    // Assign FF data
+    
+    // -- Spawn 1st fission fragment -- //
+    ff1 = new ionBase;
+    ff1->prep_FF();
     ff1->z1 = Z1;
     ff1->m1 = A1;
     ff1->e  = E1 * 1.0e6; // Change energy units to eV
+    ff1->ionId = simconf->ionId++;
     
     // Random direction
     do
     { 
-      for( int i = 0; i < 3; i++ ) ff1->dir[i] = dr250() - 0.5;
+      for( int i = 0; i < 3; ++i ) ff1->dir[i] = dr250() - 0.5;
       norm = v_dot( ff1->dir, ff1->dir );
     } while( norm <= 0.0001 );
     v_scale( ff1->dir, 1.0 / sqrtf( norm ) );
 
     // random origin
-    for( int i = 0; i < 3; i++ )
+    for( int i = 0; i < 3; ++i )
     {
       ff1->pos[i] = dr250() * sample->w[i];
       ff1->pos0[i] = ff1->pos[i]; // set orinal position
     }
-    //ff1->set_ef(); // this is used to set minimum energy to 5.0 eV or 1e-5 or original energy
-    ff1->ionId = simconf->ionId++;
     recoils.push( ff1 );
 
+    // -- Spawn 2nd fission fragments -- //
     ff2 = new ionBase( *ff1 ); // copy constructor
-    
-    for( int i = 0; i < 3; i++ ) ff2->dir[i] *= -1.0; // reverse direction
+    for( int i = 0; i < 3; ++i )
+      ff2->dir[i] *= -1.0; // reverse direction
     ff2->z1 = Z2;
     ff2->m1 = A2;
     ff2->e  = E2 * 1.0e6;
-    
     ff2->ionId = simconf->ionId++;
     recoils.push( ff2 );
 
     printf( "%s Fsn %i/%.0f Z1=%d (%.2f MeV)\t Z2=%d (%.2f MeV)\n", argv[1], n, fissions, Z1, E1, Z2, E2 );
-    //printf( "%s.%s-%s:\tFsn %i/%.0f\n",  argv[1], argv[2], argv[3], n, fissions);
   
     if (runtrim == true)
     {
@@ -302,16 +287,15 @@ int main(int argc, char *argv[])
         if( pka->tag >= 0) // if pka is xenon and not FF
         {
           // mark the first recoil that falls into the MD energy gap with 1 (child generations increase the number)
-          if( pka->e > simconf->mdmin && pka->e < simconf->mdmax && pka->md == 0 ) pka->md = 1;
+          if( pka->e > simconf->mdmin && pka->e < simconf->mdmax && pka->md == 0 )
+            pka->md = 1;
 
           for( int i = 0; i < 3; i++ )
           {
             pos1[i] = pka->pos[i];
-            //dif[i] = sample->c[i][pka->tag] - pos1[i]; // vector from center
             dif[i] = sample->c[i][pka->tag] - pos1[i];
           }
           fromcenter[0] = sqrt( v_dot( dif, dif ) );
-          //printf("before cascade: ionId: %d %f %f %f %f %f\n",pka->ionId, pka->pos[0], pka->pos[1], pka->pos[2], pka->e, fromcenter1);
         }
 
         trim->trim( pka, recoils );
@@ -336,14 +320,11 @@ int main(int argc, char *argv[])
         
         if( pka->tag >= 0 )
         {
-          hitNum++;
-          // calculate distance from center to final position
+          ++hitNum;
+
           for( int i = 0; i < 3; i++ )
             dif[i] = sample->c[i][pka->tag] - pka->pos[i];
           fromcenter[1] = sqrt( v_dot( dif, dif ) );
-          
-          if( pka->pass > 0 && fromcenter[1] - r <= 10 )
-            mixNum++; // if fg interacting
           
           // hitFile info
           if( save_hitFile )
@@ -357,9 +338,9 @@ int main(int argc, char *argv[])
         
           if( pka->escapee )
           {
-            escNum++;
-            if( fromcenter[1] < r )
-              backInNum++;
+            ++escNum;
+            if( fromcenter[1] < simconf->bub_rad )
+              ++backInNum;
             if( save_escFile )
             {
               fprintf( escFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
@@ -381,9 +362,6 @@ int main(int argc, char *argv[])
       fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", Z2, E2, pass[1], punch[1], path[1]);
       fprintf(fsnFile, "%li\t%i\t%i\t%i\n", simconf->ionId - oldionId, hitNum, escNum, backInNum);
     }
-    escList.push_back(escNum);
-    ionIdList.push_back(simconf->ionId - oldionId);
-    
   } // End of all fissions
 
   tend = time(0); // output infoFile data
@@ -392,9 +370,6 @@ int main(int argc, char *argv[])
   if( save_escFile ) fclose( escFile );
   if( save_fsnFile ) fclose( fsnFile );
   if( save_rangeFile ) fclose( rangeFile );
-  
-  
-  
   
   printf( "==+== %s.%s-%s Finished ==+==\n", argv[1], argv[2], argv[3] );
   printf( "Simulation time [s]:\t%.0f\n", difftime(tend,tstart));
