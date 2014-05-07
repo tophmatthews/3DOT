@@ -56,6 +56,9 @@ int main(int argc, char *argv[])
   // Settings
   bool calc_bub_rho = false;
   bool runtrim = true;
+  
+  bool mono = false;
+  
   sampleBase::sampleBoundary bounds = sampleBase::CUT;
   
   double rangeavg;
@@ -65,7 +68,7 @@ int main(int argc, char *argv[])
   if( argc !=  7 ) // check if arguments are passed
   {
     //fprintf( stderr, "aasyntax:\n%s basename r Cbfactor\n\nCbfactor=1 => 7e-4 bubbles/nm^3\n", argv[0] );
-    fprintf( stderr, "syntax: filename, length, fueltype, Z, M, E[keV], #");
+    fprintf( stderr, "syntax: filename, fueltype, Z, M, E[keV], #");
     return 1;
   }
   
@@ -165,6 +168,7 @@ int main(int argc, char *argv[])
   
   vector<double> range;
   vector<double> crows;
+  vector<double> path;
   double norm;
   double pos1[3]; // initial position
   double dif[3];  // vector from center of bubble to location
@@ -182,34 +186,55 @@ int main(int argc, char *argv[])
   snprintf( fname, 199, "output/temp/%s.%s.%.0f-%s.avgs" , argv[1], argv[2], zin, argv[5] );
   FILE *avgsFile = fopen( fname, "wt");
   
+  massInverter *m = new massInverter;
+  energyInverter *e = new energyInverter;
+  
   // Start fissions
   for( int n = 1; n <= fissions; n++ )
   {
     oldionId = simconf->ionId;
     
     ff1 = new ionBase;
-    ff1->gen = 0;  // generation (0 = FF)
-    ff1->tag = -1; // -1 = born in fuel
-    ff1->md = 0;
+    ff1->prep_FF();
+    
+    if( mono )
+    {
+      // Assign FF data
+      ff1->z1 = zin;
+      ff1->m1 = min;
+      ff1->e  = ein * 1e3; // e
+    }
+    else
+    {
+      double A1, A2, Etot, E1, E2; // inputs for ff creation
+      int Z1;
+      // generate fission fragment data
+      A1 = m->x( dr250() ); // Randomize first mass from double hump probability
+      A2 = 235.0 - A1;
+      e->setMass(A1);
+      Etot = e->x( dr250() ); // This E is in MeV
+      E1 = Etot * A2 / ( A1 + A2 );
+      Z1 = round( ( A1 * 92.0 ) / 235.0 );
+      
+      ff1->z1 = Z1;
+      ff1->m1 = A1;
+      ff1->e  = E1 * 1.0e6; // Change energy units to eV
 
-    // Assign FF data
-    ff1->z1 = zin;
-    ff1->m1 = min;
-    ff1->e  = ein * 1e3; // eV
-
+    }
     // set direction
     ff1->dir[0] = 1;
     ff1->dir[1] = 0;
     ff1->dir[2] = 0;
     v_norm( ff1->dir );
-
+    
     // set origin
     ff1->pos[0] = 0;
     ff1->pos[1] = length/2;
     ff1->pos[2] = length/2;
-
+    
     ff1->ionId = simconf->ionId++;
     recoils.push( ff1 );
+    
     
     if (runtrim == true)
     {
@@ -228,6 +253,7 @@ int main(int argc, char *argv[])
         
         range.push_back(pka->pos[0]);
         crows.push_back(crow);
+        path.push_back(pka->travel);
         
         if( (n % 1000) == 0 )
         {
@@ -235,7 +261,17 @@ int main(int argc, char *argv[])
           for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;
           rangeavg /= range.size();
           rangemax = *max_element(range.begin(), range.end());
-          cout << pka->ionId+1 << " " << rangeavg << " " << rangemax << endl;
+          
+          double crowsavg = 0;
+          for(std::vector<double>::iterator j=crows.begin();j!=crows.end();++j) crowsavg += *j;
+          crowsavg /= crows.size();
+          //crowsmax = *max_element(crows.begin(), crows.end());
+          
+          double pathavg = 0;
+          for(std::vector<double>::iterator j=path.begin();j!=path.end();++j) pathavg += *j;
+          pathavg /= path.size();
+          
+          cout << pka->ionId+1 << " " << rangeavg << " " << crowsavg << " " << pathavg << endl;
         }
       
         delete pka;
