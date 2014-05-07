@@ -32,8 +32,6 @@
 #include <algorithm>
 
 #include "simconf.h"
-#include "element.h"
-#include "material.h"
 #include "sample_clusters.h"
 #include "ion.h"
 #include "trim.h"
@@ -103,65 +101,7 @@ int main(int argc, char *argv[])
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
   
-  //fprintf( stderr, "sample built.\n" );
-  
-  materialBase *material;
-  elementBase *element;
-  
-  if( simconf->fueltype == "uc" ) // uranium carbide
-  {
-    material = new materialBase( 12.3 ); // rho
-    element = new elementBase;
-    element->z = 92;
-    element->m = 238.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-    element = new elementBase;
-    element->z = 6;
-    element->m = 12.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-  }
-  else if( simconf->fueltype == "un" ) // uranium nitride
-  {
-    material = new materialBase( 12.9 ); // rho
-    element = new elementBase;
-    element->z = 92;
-    element->m = 238.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-    element = new elementBase;
-    element->z = 7;
-    element->m = 14.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-  }
-  else if( simconf->fueltype == "um" ) // uranium metal
-  {
-    material = new materialBase( 17.1 ); // rho
-    element = new elementBase;
-    element->z = 92;
-    element->m = 238.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-  }
-  else if( simconf->fueltype == "xe" ) // uranium metal
-  {
-    material = new materialBase( 2.0 ); // rho
-    element = new elementBase;
-    element->z = 54;
-    element->m = 132.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-  }
-  else
-  {
-    fprintf( stderr, "Invalid fuel type specified");
-  }
-  
-  material->prepare(); // all materials added
-  sample->material.push_back( material ); // add material to sample
-
+  sample->make_fuel( simconf->fueltype, sample, 0.9 );
   
   // create a FIFO for recoils
   queue<ionBase*> recoils;

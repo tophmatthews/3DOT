@@ -30,8 +30,6 @@
 #include <iostream>
 
 #include "simconf.h"
-#include "element.h"
-#include "material.h"
 #include "sample_clusters.h"
 #include "ion.h"
 #include "trim.h"
@@ -48,7 +46,6 @@ int main(int argc, char *argv[])
   string builddate(__DATE__);
   
   // Settings
-  bool calc_bub_rho = true;
   bool runtrim = true;
   
   sampleBase::sampleBoundary bounds = sampleBase::PBC;
@@ -93,76 +90,13 @@ int main(int argc, char *argv[])
                            int( sample->w[1] / simconf->bub_rad ) - 1,
                            int( sample->w[2] / simconf->bub_rad ) - 1 );
 
-  // Add bubble in center of box
-  sample->addCluster( length/2, length/2, length/2, simconf->bub_rad);
+  sample->addCluster( length/2, length/2, length/2, simconf->bub_rad); // Add bubble in center of box
+  sample->make_fuel( simconf->fueltype, sample, 0.9 );
+  double bub_den = calc_rho(simconf->bub_rad, 132.0);
+  sample->make_fg( simconf->fueltype, sample, bub_den );
 
-  materialBase *material;
-  elementBase *element;
-  
-  if( simconf->fueltype == "uc" ) // uranium carbide
-  {
-    material = new materialBase( 12.3 ); // rho
-    element = new elementBase;
-    element->z = 92;
-    element->m = 238.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-    element = new elementBase;
-    element->z = 6;
-    element->m = 12.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-  }
-  else if( simconf->fueltype == "un" ) // uranium nitride
-  {
-    material = new materialBase( 12.9 ); // rho
-    element = new elementBase;
-    element->z = 92;
-    element->m = 238.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-    element = new elementBase;
-    element->z = 7;
-    element->m = 14.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-  }
-  else if( simconf->fueltype == "um" ) // uranium metal
-  {
-    material = new materialBase( 17.1 ); // rho
-    element = new elementBase;
-    element->z = 92;
-    element->m = 238.0;
-    element->t = 1.0;
-    material->element.push_back( element );
-  }
-  else
-  {
-    fprintf( stderr, "Invalid fuel type specified");
-  }
-  
-  material->prepare(); // all materials added
-  sample->material.push_back( material ); // add material to sample
-  
-  // xe bubble
-  double bub_rho;
-  if (calc_bub_rho)
-    bub_rho = calc_rho(simconf->bub_rad, 132.0);
-  else
-    bub_rho = 2.56; // [g/cc] solid xenon = 3.5
-  
-  material = new materialBase( bub_rho );
-  element = new elementBase;
-  element->z = 54;
-  element->m = 132.0;
-  element->t = 1.0;
-  material->element.push_back( element );
-  material->prepare();
-  sample->material.push_back( material );
-  
-  
   fprintf( stderr, "%s sample built.\n", simconf->fueltype.c_str() );
-  std::cout << "Bubble density [g/cc]: " << bub_rho << endl;
+  std::cout << "Bubble density [g/cc]: " << bub_den << endl;
   
   // create a FIFO for recoils
   queue<ionBase*> recoils;
