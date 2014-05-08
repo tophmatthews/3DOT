@@ -46,7 +46,6 @@ void ionBase::prep_FF()
   fam_fuel = 0;
   fam_fg = 0;
   tag = -1; // -1 = born in fuel
-  md = 0;
 }
 
 void ionBase::parent( ionBase *parent )
@@ -81,4 +80,64 @@ ionBase* ionBase::spawnRecoil()
   ionBase *recoil = new ionBase;
   recoil->parent(this);
   return recoil;
+}
+
+double ionBase::RangeInFuel( std::string fueltype )
+{
+  double c[5];
+  if( fueltype == "uc" )
+  {
+    if( z1 == 54 ) // if xenon
+    {
+      c[0]=-0.00462; c[1]=0.08158; c[2]=-0.4515; c[3]=1.47142; c[4]=-0.96243;
+    }
+    else if( z1 == 55 ) // if cesium
+    {
+      c[0]=-0.00631; c[1]=0.10921; c[2]=-0.5889; c[3]=1.69355; c[4]=-0.98078;
+    }
+    else if( z1 == 36 ) // if krypton
+      c[0]=-0.00567; c[1]=0.09466; c[2]=-0.48892; c[3]=1.48024; c[4]=-0.85407;
+  }
+  else if( fueltype == "um" )
+  {
+    std::cout << "Warning: All fuel acts like uc for AddAndKill" << std::endl;
+    if( z1 == 54 ) // if xenon
+    {
+      c[0]=-0.00462; c[1]=0.08158; c[2]=-0.4515; c[3]=1.47142; c[4]=-0.96243;
+    }
+    else if( z1 == 55 ) // if cesium
+    {
+      c[0]=-0.00567; c[1]=0.09466; c[2]=-0.48892; c[3]=1.48024; c[4]=-0.85407;
+    }
+    else if( z1 == 36 ) // if krypton
+    {
+      c[0]=-0.00567; c[1]=0.09466; c[2]=-0.48892; c[3]=1.48024; c[4]=-0.85407;
+    }
+  }
+  else if( fueltype == "un" )
+  {
+    std::cout << "Warning: All fuel acts like uc for AddAndKill" << std::endl;
+    if( z1 == 54 ) // if xenon
+    {
+      c[0]=-0.00462; c[1]=0.08158; c[2]=-0.4515; c[3]=1.47142; c[4]=-0.96243;
+    }
+    else if( z1 == 55 ) // if cesium
+    {
+      c[0]=-0.00567; c[1]=0.09466; c[2]=-0.48892; c[3]=1.48024; c[4]=-0.85407;
+    }
+    else if( z1 == 36 ) // if krypton
+    {
+      c[0]=-0.00567; c[1]=0.09466; c[2]=-0.48892; c[3]=1.48024; c[4]=-0.85407;
+    }
+  }
+  else
+  {
+    fprintf( stderr, "Invalid fuel type specified");
+  }
+  
+  double leng = log10( e );
+  double lrange = c[4];
+  for( int i=0; i<4; ++i)
+    lrange += c[i] * pow( leng, 4-i );
+  return pow(10, lrange);
 }

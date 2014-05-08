@@ -27,7 +27,7 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double sme
 
   if( fueltype == "uc" ) // uranium carbide
   {
-    material = new materialBase( 13.53 * smear_den ); // rho
+    material = new materialBase( 13.63 * smear_den ); // rho
     element = new elementBase;
     element->z = 92;
     element->m = 238.0;
@@ -41,7 +41,7 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double sme
   }
   else if( fueltype == "un" ) // uranium nitride
   {
-    material = new materialBase( 14.19 * smear_den ); // rho
+    material = new materialBase( 14.33 * smear_den ); // rho
     element = new elementBase;
     element->z = 92;
     element->m = 238.0;
@@ -55,7 +55,7 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double sme
   }
   else if( fueltype == "um" ) // uranium metal
   {
-    material = new materialBase( 18.8 * smear_den ); // rho
+    material = new materialBase( 19.0 * smear_den ); // rho
     element = new elementBase;
     element->z = 92;
     element->m = 238.0;
@@ -71,17 +71,49 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double sme
   sample->material.push_back( material ); // add material to sample
 }
 
-void sampleBase::make_fg( std::string fueltype, sampleBase *sample, double bub_den )
+void sampleBase::make_fg( std::string fueltype, sampleBase *sample, double bub_den, bool xe_only )
 {
   materialBase *material;
   elementBase *element;
   
-  material = new materialBase( bub_den );
-  element = new elementBase;
-  element->z = 54;
-  element->m = 132.0;
-  element->t = 1.0;
-  material->element.push_back( element );
-  material->prepare();
-  sample->material.push_back( material );
+  if( xe_only )
+  {
+    material = new materialBase( bub_den );
+    element = new elementBase;
+    element->z = 54;
+    element->m = 131.3;
+    element->t = 1.0;
+    material->element.push_back( element );
+    material->prepare();
+    sample->material.push_back( material );
+  }
+  else
+  {
+    // relative concentrations from Matzke sci. adv. lmfbr fuels, pg 433
+    
+    // Add Xe
+    material = new materialBase( bub_den );
+    element = new elementBase;
+    element->z = 54;
+    element->m = 131.3;
+    element->t = 22.8;
+    material->element.push_back( element );
+    
+    // Add Kr
+    element = new elementBase;
+    element->z = 36;
+    element->m = 83.8;
+    element->t = 2.5;
+    material->element.push_back( element );
+    
+    // Add cesium
+    element = new elementBase;
+    element->z = 55;
+    element->m = 132.9;
+    element->t = 19.2;
+    material->element.push_back( element );
+    
+    material->prepare();
+    sample->material.push_back( material );
+  }
 }

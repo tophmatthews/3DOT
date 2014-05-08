@@ -2,6 +2,8 @@
 #define ION_H 1
 
 #include <vector>
+#include <string>
+#include <iostream>
 
 struct ionBase {
   int z1;
@@ -19,7 +21,6 @@ struct ionBase {
 
   int tag, gen;
   long ionId;
-  int md; // generation after first ion falling into the MD energy gap ( 200eV - 12000eV )
 
   double ef;
 
@@ -34,6 +35,7 @@ struct ionBase {
   void set_ef();
   void reset();
   void prep_FF();
+  double RangeInFuel( std::string fueltype );
 };
 
 #endif

@@ -52,7 +52,6 @@ inline double calc_rho( double r, double m )
   rho = arho / 6.022e23 * m / 1e6; // g/cc
   //std::cout << "rho: " << rho << " arho: " << arho << endl;
   
-  
   return rho;
 }
 
@@ -98,46 +97,6 @@ inline double stdev( vector<long int> x )
   for( int i=0; i < x.size(); i++)
     b += sqr( x.at(i) - a );
   return sqrtf( b / (x.size() - 1) );
-}
-
-inline double rangeInFuel( double eng, string fueltype )
-{
-  double a, b, c, d, e;
-  if( fueltype == "uc" )
-  {
-    a	=	-0.00461	;
-    b	=	0.08149	;
-    c	=	-0.45180	;
-    d	=	1.47465	;
-    e	=	-0.96839	;
-  }
-  else if( fueltype == "um" )
-  {
-    a	=	-0.00414	;
-    b	=	0.07084	;
-    c	=	-0.36537	;
-    d	=	1.18899	;
-    e	=	-0.74596	;
-  }
-  else if( fueltype == "un" )
-  {
-    a	=	-0.00459	;
-    b	=	0.08016	;
-    c	=	-0.43430	;
-    d	=	1.39362	;
-    e	=	-0.85497	;
-  }
-  else
-  {
-    fprintf( stderr, "Invalid fuel type specified");
-  }
-  double leng = log10(eng);
-  double A = a * pow( leng, 4);
-  double B = b * pow( leng, 3);
-  double C = c * pow( leng, 2);
-  double D = d * leng;
-  double lrange = A + B + C + D + e;
-  return pow(10, lrange);
 }
 
 #endif

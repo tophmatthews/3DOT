@@ -58,7 +58,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   r1 = dr250();
   
   double bubcen[3];
-  for( int i = 0; i < 3; i++ ) bubcen[i] = sample->w[i] / 2;
+  for( int i = 0; i < 3; i++ )
+    bubcen[i] = sample->w[i] / 2;
   
   terminate = false;
   edged = false;
@@ -344,7 +345,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
           printf( "EDGED at pos: %f %f %f e: %f ls*u: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, ls );
         
         terminate = true;
-        double est_range = rangeInFuel( pka->e, simconf->fueltype );
+        double est_range = pka->RangeInFuel( simconf->fueltype );
         if( simconf->fullTraj )
           printf( "e: %f  ls: %f dir: %f %f %f\n", pka->e, ls, pka->dir[0], pka->dir[1], pka->dir[2]);
         
@@ -366,11 +367,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         
         if( recoil->tag >= 0 )
           recoil->Ehit = recoil->e;
-
-        if( pka->md > 0 )
-          recoil->md = pka->md + 1; // if pka is in range, mark recoil +1
-        else
-          recoil->md = 0;
         
         recoil->ionId = simconf->ionId++;     // set new id then add
         recoils.push( recoil );               // add recoil to stack

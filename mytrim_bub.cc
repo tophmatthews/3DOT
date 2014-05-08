@@ -93,7 +93,7 @@ int main(int argc, char *argv[])
   sample->addCluster( length/2, length/2, length/2, simconf->bub_rad); // Add bubble in center of box
   sample->make_fuel( simconf->fueltype, sample, 0.9 );
   double bub_den = calc_rho(simconf->bub_rad, 132.0);
-  sample->make_fg( simconf->fueltype, sample, bub_den );
+  sample->make_fg( simconf->fueltype, sample, bub_den, false );
 
   fprintf( stderr, "%s sample built.\n", simconf->fueltype.c_str() );
   std::cout << "Bubble density [g/cc]: " << bub_den << endl;
@@ -218,13 +218,9 @@ int main(int argc, char *argv[])
 
         // -- pre-cascade ion analysis/processing -- //
         
-        if( pka->tag >= 0) // if pka is xenon and not FF
+        if( pka->tag >= 0) // if pka is fg
         {
-          // mark the first recoil that falls into the MD energy gap with 1 (child generations increase the number)
-          if( pka->e > simconf->mdmin && pka->e < simconf->mdmax && pka->md == 0 )
-            pka->md = 1;
-
-          for( int i = 0; i < 3; i++ )
+          for( int i = 0; i < 3; ++i )
           {
             pos1[i] = pka->pos[i];
             dif[i] = sample->c[i][pka->tag] - pos1[i];
@@ -256,7 +252,7 @@ int main(int argc, char *argv[])
         {
           ++hitNum;
 
-          for( int i = 0; i < 3; i++ )
+          for( int i = 0; i < 3; ++i )
             dif[i] = sample->c[i][pka->tag] - pka->pos[i];
           fromcenter[1] = sqrt( v_dot( dif, dif ) );
           

@@ -55,12 +55,16 @@ int main(int argc, char *argv[])
   bool calc_bub_rho = false;
   bool runtrim = true;
   
-  bool mono = false;
+  
   
   sampleBase::sampleBoundary bounds = sampleBase::CUT;
   
   double rangeavg;
   double rangemax;
+  double crowsavg;
+  double crowsmax;
+  double pathavg;
+  double pathmax;
   
   char fname[200];
   if( argc !=  7 ) // check if arguments are passed
@@ -80,6 +84,9 @@ int main(int argc, char *argv[])
   double ein = atof( argv[5] );    // energy of ion in keV
   double fissions = atof( argv[6] ); // number of ions to run
   
+  bool mono = true;
+  if( zin == 0 || min == 0 || ein == 0 )
+    mono = false;
   
   // seed randomnumber generator from system entropy pool
   FILE *urand = fopen( "/dev/random", "r" );
@@ -106,7 +113,7 @@ int main(int argc, char *argv[])
   // create a FIFO for recoils
   queue<ionBase*> recoils;
   
-  vector<double> range;
+  vector<double> range; 
   vector<double> crows;
   vector<double> path;
   double norm;
@@ -120,8 +127,8 @@ int main(int argc, char *argv[])
   double A1, Etot, E1;
   int Z1;
   
-  snprintf( fname, 199, "output/temp/%s.%s.%.0f-%s.range" , argv[1], argv[2], zin, argv[5] );
-  FILE *rangeFile = fopen( fname, "wt");
+  //snprintf( fname, 199, "output/temp/%s.%s.%.0f-%s.range" , argv[1], argv[2], zin, argv[5] );
+  //FILE *rangeFile = fopen( fname, "wt");
   
   snprintf( fname, 199, "output/temp/%s.%s.%.0f-%s.avgs" , argv[1], argv[2], zin, argv[5] );
   FILE *avgsFile = fopen( fname, "wt");
@@ -129,6 +136,7 @@ int main(int argc, char *argv[])
   massInverter *m = new massInverter;
   energyInverter *e = new energyInverter;
   
+  cout << "# ion, rangeavg, crowsavg, pathavg" << endl;
   // Start fissions
   for( int n = 1; n <= fissions; n++ )
   {
@@ -191,6 +199,12 @@ int main(int argc, char *argv[])
         crow = sqrt( v_dot( dif, dif ) );
         //fprintf( rangeFile, "%li \t%i \t%f \t%f \t%f \t%f \n", pka->ionId, pka->z1, pka->pos[0], pka->pos[1], pka->pos[2], crow);
         
+        if( pka->pos[0] >= length )
+        {
+          printf("box too small!");
+          exit (EXIT_FAILURE);
+        }
+        
         range.push_back(pka->pos[0]);
         crows.push_back(crow);
         path.push_back(pka->travel);
@@ -202,14 +216,15 @@ int main(int argc, char *argv[])
           rangeavg /= range.size();
           rangemax = *max_element(range.begin(), range.end());
           
-          double crowsavg = 0;
+          crowsavg = 0;
           for(std::vector<double>::iterator j=crows.begin();j!=crows.end();++j) crowsavg += *j;
           crowsavg /= crows.size();
-          //crowsmax = *max_element(crows.begin(), crows.end());
+          crowsmax = *max_element(crows.begin(), crows.end());
           
-          double pathavg = 0;
+          pathavg = 0;
           for(std::vector<double>::iterator j=path.begin();j!=path.end();++j) pathavg += *j;
           pathavg /= path.size();
+          pathmax = *max_element(path.begin(), path.end());
           
           cout << pka->ionId+1 << " " << rangeavg << " " << crowsavg << " " << pathavg << endl;
         }
@@ -220,20 +235,30 @@ int main(int argc, char *argv[])
   } // End of all fissions
   
   // output infoFile data
-  tend = time(0);
   
   
+  rangeavg = 0;
+  for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;
+  rangeavg /= range.size();
+  rangemax = *max_element(range.begin(), range.end());
   
-  double crowsavg;
+  crowsavg = 0;
   for(std::vector<double>::iterator j=crows.begin();j!=crows.end();++j) crowsavg += *j;
   crowsavg /= crows.size();
-  double crowsmax = *max_element(crows.begin(), crows.end());
-  //cout << cavg << endl;
+  crowsmax = *max_element(crows.begin(), crows.end());
+  
+  pathavg = 0;
+  for(std::vector<double>::iterator j=path.begin();j!=path.end();++j) pathavg += *j;
+  pathavg /= path.size();
+  pathmax = *max_element(path.begin(), path.end());
+  
+  tend = time(0);
+  
   printf("fueltype, z, m, ions, E [keV], Range [A], Max [A], Crows [A], Max [A]\n");
   printf("%s %.0f \t%.2f \t%.0f \t%.3f \t%.2f \t%.2f \t%.2f \t%.2f\n", argv[2], zin, min, fissions, ein, rangeavg, rangemax, crowsavg, crowsmax);
   fprintf( avgsFile, " %.0f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f\n", zin, min, ein, rangeavg, rangemax, crowsavg, crowsmax);
   
-  fclose( rangeFile );
+  //fclose( rangeFile );
   fclose( avgsFile );
   
   //printf( "==+== %s.%s-%s Finished ==+==\n", argv[1], argv[2], argv[3] );
