@@ -4,10 +4,10 @@
 #include <vector>
 #include <queue>
 
-using namespace std;
-
 #include "material.h"
 #include "sample.h"
+
+using namespace std;
 
 class trimBase {
 public:
@@ -28,20 +28,6 @@ protected:
   virtual bool spawnRecoilLimit() { return recoil->e > 12.0; };
   virtual void vacancyCreation() {};
 };
-
-// //
-// // Do a breadth first rather than depth first recoil simulation
-// //
-// class trimBreadthFirst : public trimBase {
-// public:
-//   trimBreadthFirst( sampleBase *sample_ ) : trimBase( sample_ ) {};
-// protected:
-//   virtual bool spawnRecoil() {
-//     recoil_queue_ptr->push(pka);
-//     terminate = true;
-//     return recoil->e > 12.0;
-//   };
-// };
 
 //
 // Only follow the primary knock ons

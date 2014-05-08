@@ -10,10 +10,14 @@ struct scoefLine {
 };
 
 struct simconfType {
-  double ed, alfa, alpha, tmin, tau, da, cw, bub_rad;
+  double ed, alfa, alpha, tmin, tau, da, cw;
   double mdmin, mdmax; // energy ranges for ion selection
   long int ionId;
 
+  // input from commandline
+  std::string run_name, fueltype;
+  double bub_rad, length, fissions;
+  
   // tables from files
   scoefLine scoef[92];
   double pcoef[92][8];
@@ -28,8 +32,6 @@ struct simconfType {
   int vacancies_created;
   double KP_vacancies;
   
-  std::string fueltype;
-
   simconfType( double _alfa = 0.0 );
 private:
   void read_scoef();

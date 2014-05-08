@@ -1,18 +1,12 @@
 #include <math.h>
 #include <stdio.h>
+#include <iostream>
 
 #include "trim.h"
 #include "simconf.h"
-
 #include "functions.h"
-#include <iostream>
+
 using namespace std;
-
-//#define RANGECORRECT2
-
-//
-// all energies are in eV
-//
 
 // does a single ion cascade
 void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)

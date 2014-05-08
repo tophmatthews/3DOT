@@ -3,6 +3,9 @@
 
 #include <vector>
 #include <string>
+#include <queue>
+
+#include "simconf.h"
 
 struct ionBase {
   int z1;
@@ -35,6 +38,7 @@ struct ionBase {
   void reset();
   void prep_FF();
   double RangeInFuel( std::string fueltype );
+  static void make_FF( std::queue<ionBase*> &recoils, int fsn_num );
 };
 
 #endif

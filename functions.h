@@ -65,7 +65,7 @@ inline bool inbubble( double bub_cen[3], double pos[3], double r )
   else return false;
 }
 
-inline double avg( vector<int> x )
+inline double avg( std::vector<int> x )
 {
   double a = 0;
   for( int i=0; i < x.size(); i++ )
@@ -73,7 +73,7 @@ inline double avg( vector<int> x )
   return a / x.size();
 }
 
-inline double avg( vector<long int> x )
+inline double avg( std::vector<long int> x )
 {
   double a = 0;
   for( int i=0; i < x.size(); i++ )
@@ -81,7 +81,7 @@ inline double avg( vector<long int> x )
   return a / x.size();
 }
 
-inline double stdev( vector<int> x )
+inline double stdev( std::vector<int> x )
 {
   double a = avg(x);
   double b = 0;
@@ -90,7 +90,7 @@ inline double stdev( vector<int> x )
   return sqrtf( b / (x.size() - 1) );
 }
 
-inline double stdev( vector<long int> x )
+inline double stdev( std::vector<long int> x )
 {
   double a = avg(x);
   double b = 0;

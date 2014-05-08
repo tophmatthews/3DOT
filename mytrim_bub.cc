@@ -61,8 +61,17 @@ int main(int argc, char *argv[])
     fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype");
     return 1;
   }
+
+  // initialize global parameter structure and read data tables from file
+  simconf = new simconfType;
+  simconf->run_name = argv[1];
+  simconf->bub_rad = atof( argv[2] );
+  simconf->length = atof( argv[3] );
+  simconf->fissions = atof( argv[4] );
+  simconf->fueltype = argv[5];
   
-  printf( "==+== %s.%s-%s Started ==+==\n", argv[1], argv[2], argv[3] );
+  printf( "==+== %s.%0.f-%0.f Started ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
+  
   
   // seed randomnumber generator from system entropy pool
   FILE *urand = fopen( "/dev/random", "r" );
@@ -71,17 +80,8 @@ int main(int argc, char *argv[])
   fclose( urand );
   r250_init( seed<0 ? -seed : seed ); // random generator goes haywire with neg. seed
 
-  // initialize global parameter structure and read data tables from file
-  simconf = new simconfType;
-  simconf->bub_rad = atof( argv[2] );;
-  simconf->fueltype = argv[5];
-  
-  // Convert inputs to floats
-  double length = atof( argv[3] ); // size of box in A
-  double fissions = atof( argv[4] ); // number of fissions to run
-
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
-  sampleClusters *sample = new sampleClusters( length, length, length, bounds );
+  sampleClusters *sample = new sampleClusters( simconf->length, simconf->length, simconf->length, bounds );
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
@@ -90,7 +90,7 @@ int main(int argc, char *argv[])
                            int( sample->w[1] / simconf->bub_rad ) - 1,
                            int( sample->w[2] / simconf->bub_rad ) - 1 );
 
-  sample->addCluster( length/2, length/2, length/2, simconf->bub_rad); // Add bubble in center of box
+  sample->addCluster( simconf->length/2, simconf->length/2, simconf->length/2, simconf->bub_rad); // Add bubble in center of box
   sample->make_fuel( simconf->fueltype, sample, 0.9 );
   double bub_den = calc_rho(simconf->bub_rad, 132.0);
   sample->make_fg( simconf->fueltype, sample, bub_den, false );
@@ -101,7 +101,7 @@ int main(int argc, char *argv[])
   // create a FIFO for recoils
   queue<ionBase*> recoils;
 
-  double norm;                   // used to determine direction
+  //double norm;                   // used to determine direction
   double pos1[3];                // initial position
   double dif[3];                 // vector from center of bubble to location
   double fromcenter[2];          // distance of (initial/final) ion location from center of bubble
@@ -111,12 +111,13 @@ int main(int argc, char *argv[])
   int punch[2];                  // # times (ff1/ff2) hits bubble
   int hitNum, escNum, backInNum; // # times fg atoms is hit/escapes/knocked back in
 
-  massInverter *m = new massInverter;
-  energyInverter *e = new energyInverter;
-  ionBase *ff1, *ff2, *pka;
+//  massInverter *m = new massInverter;
+//  energyInverter *e = new energyInverter;
+//  ionBase *ff1, *ff2;
+  ionBase *pka;
 
-  double A1, A2, Etot, E1, E2; // inputs for ff creation
-  int Z1, Z2;
+//  double A1, A2, Etot, E1, E2; // inputs for ff creation
+//  int Z1, Z2;
 
   // File creation
   
@@ -124,7 +125,7 @@ int main(int argc, char *argv[])
   if( save_hitFile )
   {
     char fname[200];
-    snprintf( fname, 199, "output/temp/%s.%s-%s.hit" , argv[1], argv[2], argv[3] );
+    snprintf( fname, 199, "output/temp/%s.%0.f-%0.f.hit" , simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
     hitFile = fopen( fname, "wt");
   }
 
@@ -132,7 +133,7 @@ int main(int argc, char *argv[])
   if( save_escFile )
   {
     char fname[200];
-    snprintf( fname, 199, "output/temp/%s.%s-%s.esc" , argv[1], argv[2], argv[3] );
+    snprintf( fname, 199, "output/temp/%s.%0.f-%0.f.esc" , simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
     escFile = fopen( fname, "wt");
   }
   
@@ -140,7 +141,7 @@ int main(int argc, char *argv[])
   if( save_fsnFile )
   {
     char fname[200];
-    snprintf( fname, 199, "output/temp/%s.%s-%s.fsn" , argv[1], argv[2], argv[3] );
+    snprintf( fname, 199, "output/temp/%s.%0.f-%0.f.fsn" , simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
     fsnFile = fopen( fname, "wt");
   }
   
@@ -148,12 +149,12 @@ int main(int argc, char *argv[])
   if( save_rangeFile)
   {
     char fname[200];
-    snprintf( fname, 199, "output/temp/%s.%s-%s.range" , argv[1], argv[2], argv[3] );
+    snprintf( fname, 199, "output/temp/%s.%0.f-%0.f.range" , simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
     rangeFile = fopen( fname, "wt");
   }
 
   // Start fissions
-  for( int n = 1; n <= fissions; ++n )
+  for( int n = 1; n <= simconf->fissions; ++n )
   {
     // reset counters
     escNum = 0;
@@ -161,51 +162,8 @@ int main(int argc, char *argv[])
     backInNum = 0;
     oldionId = simconf->ionId;
     
-    // generate fission fragment data
-    A1 = m->x( dr250() ); // Randomize first mass from double hump probability
-    A2 = 235.0 - A1;
-    e->setMass(A1);
-    Etot = e->x( dr250() ); // This E is in MeV
-    E1 = Etot * A2 / ( A1 + A2 );
-    E2 = Etot - E1;
-    Z1 = round( ( A1 * 92.0 ) / 235.0 );
-    Z2 = 92 - Z1;
-    
-    // -- Spawn 1st fission fragment -- //
-    ff1 = new ionBase;
-    ff1->prep_FF();
-    ff1->z1 = Z1;
-    ff1->m1 = A1;
-    ff1->e  = E1 * 1.0e6; // Change energy units to eV
-    ff1->ionId = simconf->ionId++;
-    
-    // Random direction
-    do
-    { 
-      for( int i = 0; i < 3; ++i ) ff1->dir[i] = dr250() - 0.5;
-      norm = v_dot( ff1->dir, ff1->dir );
-    } while( norm <= 0.0001 );
-    v_scale( ff1->dir, 1.0 / sqrtf( norm ) );
-
-    // random origin
-    for( int i = 0; i < 3; ++i )
-    {
-      ff1->pos[i] = dr250() * sample->w[i];
-      ff1->pos0[i] = ff1->pos[i]; // set orinal position
-    }
-    recoils.push( ff1 );
-
-    // -- Spawn 2nd fission fragments -- //
-    ff2 = new ionBase( *ff1 ); // copy constructor
-    for( int i = 0; i < 3; ++i )
-      ff2->dir[i] *= -1.0; // reverse direction
-    ff2->z1 = Z2;
-    ff2->m1 = A2;
-    ff2->e  = E2 * 1.0e6;
-    ff2->ionId = simconf->ionId++;
-    recoils.push( ff2 );
-
-    printf( "%s Fsn %i/%.0f Z1=%d (%.2f MeV)\t Z2=%d (%.2f MeV)\n", argv[1], n, fissions, Z1, E1, Z2, E2 );
+    ionBase *ionTrash;
+    ionTrash->make_FF( recoils, n );
   
     if (runtrim == true)
     {
@@ -289,8 +247,8 @@ int main(int argc, char *argv[])
     if( save_fsnFile )
     {
       fprintf(fsnFile, "%i\t", n);
-      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", Z1, E1, pass[0], punch[0], path[0]);
-      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", Z2, E2, pass[1], punch[1], path[1]);
+      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", 1, 1.0, pass[0], punch[0], path[0]);
+      fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", 1, 1.0, pass[1], punch[1], path[1]);
       fprintf(fsnFile, "%li\t%i\t%i\t%i\n", simconf->ionId - oldionId, hitNum, escNum, backInNum);
     }
   } // End of all fissions
@@ -302,7 +260,7 @@ int main(int argc, char *argv[])
   if( save_fsnFile ) fclose( fsnFile );
   if( save_rangeFile ) fclose( rangeFile );
   
-  printf( "==+== %s.%s-%s Finished ==+==\n", argv[1], argv[2], argv[3] );
+  printf( "==+== %s.%0.f-%0.f Finished ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
   printf( "Simulation time [s]:\t%.0f\n", difftime(tend,tstart));
   return EXIT_SUCCESS;
 }

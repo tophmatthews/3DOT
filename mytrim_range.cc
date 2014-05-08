@@ -261,6 +261,8 @@ int main(int argc, char *argv[])
   //fclose( rangeFile );
   fclose( avgsFile );
   
+  cout << tend - tstart << endl;
+  
   //printf( "==+== %s.%s-%s Finished ==+==\n", argv[1], argv[2], argv[3] );
   
   return EXIT_SUCCESS;
