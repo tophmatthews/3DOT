@@ -3,7 +3,6 @@
 
 #include <vector>
 #include <string>
-#include <iostream>
 
 struct ionBase {
   int z1;

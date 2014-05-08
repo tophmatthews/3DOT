@@ -1,4 +1,6 @@
 #include <cmath>
+#include <stdio.h>
+#include <iostream>
 
 #include "ion.h"
 
