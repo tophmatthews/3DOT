@@ -27,6 +27,7 @@ struct simconfType {
   bool makeRecoils;
   bool BoundaryFix;
   bool AddAndKill;
+  bool ELosses;
 
   // statistics of the simulation run
   int vacancies_created;

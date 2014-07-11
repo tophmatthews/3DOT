@@ -129,7 +129,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       pka->punch++; // add to punch count
       
       ls += 0.1;                  // add a bit to ensure pka travels across boundary
-      pka->e -= ls * material->getrstop( pka ); // electronic energy loss
+      if( simconf->ELosses )
+        pka->e -= ls * material->getrstop( pka ); // electronic energy loss
       if( pka->e < 0.0)
         fprintf( stderr, " electronic energy loss stopped the ion. Broken recoil!!\n" );
       
@@ -236,7 +237,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       // 1000g/kg, 6.022e23/mol, 1.602e-19J/eV, 1e5m/s=1Ang/fs 1.0/0.09822038
       //printf( "se %d  %f [eV]  %f [keV/nm]  %f [nm]\n", pka->ionId, pka->e, see/100.0, pl/10.0 );
 
-      pka->e -= dee; // subtract electronic energy loss
+      if( simconf->ELosses )
+        pka->e -= dee; // subtract electronic energy loss
       
       if( pka->e < 0.0 && den > 100.0 ) 
         fprintf( stderr, " electronic energy loss stopped the ion. Broken recoil!!\n" );

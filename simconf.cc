@@ -24,6 +24,7 @@ simconfType::simconfType( double _alfa )
   makeRecoils = true;  // make recoils
   BoundaryFix = true;  //
   AddAndKill  = true;  // range estimation for gas atoms that reach box boundary
+  ELosses     = true;
 
   ionId = 0; // set global ion id to zero (will be incremented for each new projectile)
 
