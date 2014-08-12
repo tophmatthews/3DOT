@@ -4,6 +4,7 @@
 #include <vector>
 #include <queue>
 
+#include "ion.h"
 #include "material.h"
 #include "sample.h"
 
@@ -26,7 +27,11 @@ protected:
 
   // by default only follow recoils with E > 12eV
   virtual bool spawnRecoilLimit() { return recoil->e > 12.0; };
-  virtual void vacancyCreation() {};
+  
+  virtual void doELoss( ionBase *pka, materialBase *material, double ls);
+  virtual void rangeFix( ionBase *pka, sampleBase *sample, bool& rangefix_flag, double& ls );
+
+  virtual void Rutherford() {};
 };
 
 #endif

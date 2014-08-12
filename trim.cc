@@ -17,7 +17,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   // make recoil queue available in overloadable functions
   recoil_queue_ptr = &recoils;
 
-  double max = 0.0;
   double e0kev = pka->e / 1000.0;
   int ic = 0;
   int nn, ie;
@@ -33,11 +32,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   double mys2, myff, mydelta;
   double den;
   double rdir[3], perp[3], norm, psi;
-  
-  double testPos; // projected position. used for pathlength fix
-
-  bool Rangefix; // switch for mfp fix
-  double u[2];
   
   double p1, p2;
   double range;
@@ -61,7 +55,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   do // cycle for each collision
   {
     r2 = dr250();
-    hh = dr250(); // selects element inside material to scatter from
+    hh = dr250(); // random number to select element inside material to scatter from
 
     ic++; // number of collisions for each ion in each material
     material = sample->lookupMaterial( pka->pos );
@@ -87,53 +81,22 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     // Check to see if line intersects sphere
     // note: this only works for single sphere in center of sample space
-
-    Rangefix = false;
     
+    bool crossed = false;
     if( simconf->BoundaryFix )
-    {
-      double aaa = 0, bbb = 0, ccc = 0;
-      for( int i = 0; i < 3; i++ )
-      {
-        testPos = pka->pos[i] + pka->dir[i] * ls;
-        aaa += sqr( testPos - pka->pos[i] );
-        bbb += 2 * ( testPos - pka->pos[i] ) * ( pka->pos[i] - sample->w[i] / 2 );
-        ccc += sqr( sample->w[i]/2 ) + sqr( pka->pos[i] ) - sample->w[i] * pka->pos[i];
-      }
-      ccc -= sqr( simconf->bub_rad );
-
-      double ddd = bbb*bbb - 4 * aaa * ccc;
-      
-      if( ddd > 0 )
-      {
-        u[0] = (- bbb - sqrtf( ddd )) / (2 * aaa);
-        u[1] = (- bbb + sqrtf( ddd )) / (2 * aaa);
-        if( u[0] >= 0 && u[0] <= 1 )
-        {
-          Rangefix = true;
-          ls *=u[0];
-        }
-        else if( u[1] >=0 && u[1] <=1 )
-        {
-          Rangefix = true;
-          ls *=u[1];
-        }
-      }
+      rangeFix( pka, sample, crossed, ls );
     
-      if( simconf->fullTraj ) printf("u1: %f u2:%f\n", u[0], u[1]);
-    }
-    
-    if(Rangefix) // boundary is crossed
+    if (crossed) // boundary is crossed
     {
       ic = 0;       // reset collision count
       pka->punch++; // add to punch count
       
       ls += 0.1;                  // add a bit to ensure pka travels across boundary
-      if( simconf->ELosses )
-        pka->e -= ls * material->getrstop( pka ); // electronic energy loss
-      if( pka->e < 0.0)
-        fprintf( stderr, " electronic energy loss stopped the ion. Broken recoil!!\n" );
       
+      if (simconf->calc_eloss)
+        doELoss( pka, material, ls );
+      
+      // Tag describes where the ion was birthed. FF = -1, bubble = 0, everything else is
       if( pka->tag >= 0 )
       {
         pka->escapee = true;
@@ -165,9 +128,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 
       eps = element->fi * pka->e; // epsilon of given element REDEFINED HERE!!
       b = p / element->ai;        // reduced impact parameter
-
-      see = material->getrstop( pka ); // electronic stopping power
-      dee = ls * see; // electronic energy loss: xsec * pathlength
       
       if( eps > 10.0 )
       {
@@ -237,32 +197,24 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       // 1000g/kg, 6.022e23/mol, 1.602e-19J/eV, 1e5m/s=1Ang/fs 1.0/0.09822038
       //printf( "se %d  %f [eV]  %f [keV/nm]  %f [nm]\n", pka->ionId, pka->e, see/100.0, pl/10.0 );
 
-      if( simconf->ELosses )
-        pka->e -= dee; // subtract electronic energy loss
-      
-      if( pka->e < 0.0 && den > 100.0 ) 
-        fprintf( stderr, " electronic energy loss stopped the ion. Broken recoil!!\n" );
+      if( simconf->calc_eloss )
+        doELoss( pka, material, ls );
 
       p1 = sqrtf( 2.0 * pka->m1 * pka->e ); // momentum before collision
       pka->e -= den;                        // subtract energy lost in collision
-      if( pka->e < 0.0 ) pka->e = 0.0;
-      p2 = sqrtf( 2.0 * pka->m1 * pka->e ); // momentum after collision 
-
-      if( dee > max ) max = dee;
+      if (pka->e < 0.0)
+        pka->e = 0.0;
+      p2 = sqrtf( 2.0 * pka->m1 * pka->e ); // momentum after collision
 
       pka->travel += ls; // add travel length to total pka path length
 
-      for( int i = 0; i < 3; ++i )
+      for( int i = 0; i < 3; ++i ) // move ion to location of recoil
         pka->pos[i] += pka->dir[i] * ls ;
       
       recoil = pka->spawnRecoil();
       
-      for( int i = 0; i < 3; ++i ) // progress ion
+      for( int i = 0; i < 3; ++i ) // ion and recoil location fix based on Boundary conditions
       {
-        recoil->dir[i] = pka->dir[i] * p1; // initial pka momentum vector
-        
-        // Fix for BC
-        
         if( sample->bc[i] == sampleBase::CUT && ( pka->pos[i] > sample->w[i] || pka->pos[i] < 0.0 ) )
           terminate = true;
         else if ( sample->bc[i] == sampleBase::PBC )
@@ -331,6 +283,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       // calculate new direction, subtract from old dir (stored in recoil)
       for( int i = 0; i < 3; i++ ) 
       {
+        recoil->dir[i] = pka->dir[i] * p1; // initial pka momentum vector
         pka->dir[i] += perp[i] * sin( psi );
         recoil->dir[i] -= pka->dir[i] * p2;
       }
@@ -386,3 +339,46 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   if( simconf->fullTraj && pka->tag >= 0 ) printf( "\n" );
   if( simconf->fullTraj ) printf("particle killed \n\n");
 }
+
+void trimBase::doELoss( ionBase *pka, materialBase *material, double ls)
+{
+  pka->e -= ls * material->getrstop( pka );
+  if( pka->e < 0.0)
+    fprintf( stderr, " electronic energy loss stopped the ion. Broken recoil!!\n" );
+}
+
+void trimBase::rangeFix( ionBase *pka, sampleBase *sample, bool& rangefix_flag, double& ls )
+{
+  double a = 0;
+  double b = 0;
+  double c = 0;
+  for( int i = 0; i < 3; i++ )
+  {
+    double testPos = pka->pos[i] + pka->dir[i] * ls;
+    a += sqr( testPos - pka->pos[i] );
+    b += 2 * ( testPos - pka->pos[i] ) * ( pka->pos[i] - sample->w[i] / 2 );
+    c += sqr( sample->w[i]/2 ) + sqr( pka->pos[i] ) - sample->w[i] * pka->pos[i];
+  }
+  c -= sqr( simconf->bub_rad );
+  
+  double d = b*b - 4 * a * c;
+  
+  double u[2];
+  if( d > 0 )
+  {
+    u[0] = (- b - sqrtf( d )) / (2 * a);
+    u[1] = (- b + sqrtf( d )) / (2 * a);
+    if( u[0] >= 0 && u[0] <= 1 )
+    {
+      rangefix_flag = true;
+      ls *=u[0];
+    }
+    else if( u[1] >=0 && u[1] <=1 )
+    {
+      rangefix_flag = true;
+      ls *=u[1];
+    }
+    if (simconf->fullTraj) printf("u1: %f u2:%f\n", u[0], u[1]);
+  }
+}
+

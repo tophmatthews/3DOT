@@ -9,6 +9,8 @@ struct scoefLine {
   double mm1, m1, mnat, rho, atrho, vfermi, heat, lfctr;
 };
 
+enum potentials {NONE, HARDSPHERE, RUTHERFORD, TRIM};
+
 struct simconfType {
   double ed, alfa, alpha, tmin, tau, da, cw;
   double mdmin, mdmax; // energy ranges for ion selection
@@ -27,7 +29,9 @@ struct simconfType {
   bool makeRecoils;
   bool BoundaryFix;
   bool AddAndKill;
-  bool ELosses;
+  bool calc_eloss;
+  
+  potentials pot_ff, pot_fg, pot_lat;
 
   // statistics of the simulation run
   int vacancies_created;
