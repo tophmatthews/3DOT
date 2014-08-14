@@ -7,6 +7,8 @@
 #include "ion.h"
 #include "material.h"
 #include "sample.h"
+#include "simconf.h"
+#include "functions.h"
 
 using namespace std;
 
@@ -32,6 +34,7 @@ protected:
   virtual void rangeFix( ionBase *pka, sampleBase *sample, bool& rangefix_flag, double& ls );
 
   virtual void Rutherford() {};
+  virtual double calcS2(ionBase *pka, materialBase *material);
 };
 
 #endif

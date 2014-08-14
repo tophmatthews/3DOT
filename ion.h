@@ -7,6 +7,8 @@
 
 #include "simconf.h"
 
+enum ion_type {FF, LAT, FG};
+
 struct ionBase {
   int z1;
   double m1, e;
@@ -23,6 +25,7 @@ struct ionBase {
 
   int tag, gen;
   long ionId;
+  ion_type type;
 
   double ef;
 
@@ -36,8 +39,8 @@ struct ionBase {
 
   void set_ef();
   void reset();
-  void prep_FF();
   double RangeInFuel( std::string fueltype );
+  virtual void prep_FF(ionBase *ff);
   static void make_FF( std::queue<ionBase*> &recoils, int fsn_num );
 };
 

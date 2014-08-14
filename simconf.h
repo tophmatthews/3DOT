@@ -2,11 +2,13 @@
 #define SIMCONF_H 1
 
 #include <string>
+#include <iostream>
 
 // ZBL coefficients a,b,c,d for all element pairs from Z=1..92
 struct scoefLine {
   char sym[3], name[30];
   double mm1, m1, mnat, rho, atrho, vfermi, heat, lfctr;
+  double radius;
 };
 
 enum potentials {NONE, HARDSPHERE, RUTHERFORD, TRIM};

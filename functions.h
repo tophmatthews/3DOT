@@ -8,7 +8,8 @@
 
 inline void v_cross( const double *a1, const double *a2, double *b )
 {
-    for( int i = 0; i < 3; i++ ) b[i] = a1[(i+1)%3] * a2[(i+2)%3] - a1[(i+2)%3] * a2[(i+1)%3];
+    for( int i = 0; i < 3; i++ )
+      b[i] = a1[(i+1)%3] * a2[(i+2)%3] - a1[(i+2)%3] * a2[(i+1)%3];
 }
 
 inline void v_scale( double *a1, double b )

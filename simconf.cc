@@ -75,7 +75,7 @@ void simconfType::read_scoef()
   sf = fopen( fname, "rt" );
   fgets( buf, 2000, sf ); // header
   fgets( buf, 2000, sf ); // header
-  for( int i = 0; i < 92; i++ )
+  for ( int i = 0; i < 92; ++i )
   {
     fscanf( sf, "%*d %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf %lf\n",
       &scoef[i].mm1, &scoef[i].m1, &scoef[i].mnat,
@@ -90,17 +90,27 @@ void simconfType::read_scoef()
   snprintf( fname, 500, "%s/SLFCTR.dat", DATA_DIR );
   sf = fopen( fname, "rt" );
   fgets( buf, 2000, sf ); // header
-  for( int i = 0; i < 92; i++ )
+  for ( int i = 0; i < 92; ++i )
     fscanf( sf, "%*d %lf\n", &scoef[i].lfctr );
   fclose( sf );
 
-  snprintf( fname, 500, "%s/ELNAME.dat", DATA_DIR );
+  snprintf( fname, 500, "%s/ELRAD.dat", DATA_DIR );
   sf = fopen( fname, "rt" );
   int z;
-  for( int i = 0; i < 92; i++ )
+  for ( int i = 0; i < 92; ++i )
   {
-    fscanf( sf, "%*d %s %s\n", scoef[i].sym, scoef[i].name );
+    fscanf( sf, "%*d %s %s %lf\n", scoef[i].sym, scoef[i].name, &scoef[i].radius );
+    scoef[i].radius /= 100;
   }
   fclose( sf );
+  
+//  snprintf( fname, 500, "%s/ELRAD.dat", DATA_DIR );
+//  sf = fopen( fname, "rt" );
+//  int z;
+//  for ( int i = 0; i < 92; ++i )
+//  {
+//    fscanf( sf, "%*d %s %s %d\n", scoef[i].sym, scoef[i].name, scoef[i].radius );
+//  }
+//  fclose( sf );
 }
 
