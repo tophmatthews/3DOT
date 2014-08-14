@@ -55,9 +55,9 @@ int main(int argc, char *argv[])
   bool save_escFile   = true;
   bool save_rangeFile = false;
   
-  if( argc != 6 ) // check if arguments are passed
+  if( argc != 7 ) // check if arguments are passed
   {
-    fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype");
+    fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype legacy");
     return 1;
   }
 
@@ -68,6 +68,15 @@ int main(int argc, char *argv[])
   simconf->length = atof( argv[3] );
   simconf->fissions = atof( argv[4] );
   simconf->fueltype = argv[5];
+  
+  if (atof(argv[6]) == 1)
+  {
+    printf( "Legacy calculation on\n");
+    simconf->pot_ff = HARDSPHERE;
+    simconf->pot_fg = RUTHERFORD;
+    simconf->pot_lat = RUTHERFORD;
+    simconf->calc_eloss = false;
+  }
   
   printf( "==+== %s.%0.f-%0.f Started ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
   
