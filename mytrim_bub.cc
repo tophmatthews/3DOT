@@ -72,9 +72,9 @@ int main(int argc, char *argv[])
   if (atof(argv[6]) == 1)
   {
     printf( "Legacy calculation on\n");
-    simconf->pot_ff = HARDSPHERE;
-    simconf->pot_fg = RUTHERFORD;
-    simconf->pot_lat = RUTHERFORD;
+    simconf->pot_ff = RUTHERFORD;
+    simconf->pot_fg = HARDSPHERE;
+    simconf->pot_lat = HARDSPHERE;
     simconf->calc_eloss = false;
   }
   
