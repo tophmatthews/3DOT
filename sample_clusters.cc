@@ -11,8 +11,11 @@
 sampleClusters::sampleClusters( double x, double y, double z , sampleBoundary b)  : sampleBase( x, y, z, b)
 { 
   sh = 0; // spatial hash
-  cl = 0; cn = 0; cnm = 0; //cluster linklist, actual number of clusters (incl. ghosts) and number reserved
-  for( int i = 0; i < 4; i++ ) c[i] = 0; // three arrays for cluster x,y,z,r^2 coordinates
+  cl = 0; // cluster linklist
+  cn = 0; // actual number of clusters (incl. ghosts)
+  cnm = 0;// number reserved
+  for ( int i = 0; i < 4; ++i )
+    c[i] = 0; // three arrays for cluster x,y,z,r^2 coordinates
 }
 
 // look if we are within dr of a cluster
@@ -99,7 +102,9 @@ int sampleClusters::lookupCluster( double* pos, double dr )
 
 void sampleClusters::initSpatialhash( int x, int y, int z )
 {
-  kn[0] = x; kn[1] = y; kn[2] = z;
+  kn[0] = x;
+  kn[1] = y;
+  kn[2] = z;
   sh = (int*)malloc( sizeof(int) * x*y*z );
   clearSpatialHash();
   
@@ -116,7 +121,8 @@ void sampleClusters::initSpatialhash( int x, int y, int z )
 
 void sampleClusters::clearSpatialHash()
 {
-  for( int i = 0; i < kn[0]*kn[1]*kn[2]; i++ ) sh[i]=-1;
+  for ( int i = 0; i < kn[0]*kn[1]*kn[2]; ++i )
+    sh[i]=-1;
 }
 
 void sampleClusters::reallocClusters( int n )
@@ -124,7 +130,7 @@ void sampleClusters::reallocClusters( int n )
   if( n > cnm )
   {
     cl = (int*)realloc( cl, sizeof(int) * n );
-    for( int i = 0; i < 4; i++ )
+    for ( int i = 0; i < 4; i++ )
     {
       c[i] = (double*)realloc( c[i], sizeof(double) * n );
     }

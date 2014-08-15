@@ -3,9 +3,6 @@
 #include <iostream>
 
 #include "ion.h"
-#include "invert.h"
-#include "r250.h"
-#include "functions.h"
 
 ionBase::ionBase()
 {
@@ -29,20 +26,18 @@ ionBase::ionBase( int _z1, double _m1, double _e ) : z1(_z1), m1(_m1), e(_e)
   reset();
 }
 
-void ionBase::set_ef()
-{
-  ef = fmax( 5.0, 0.00001 * e ); // final energy -> either 5 or 0.00001 e
-}
-
 void ionBase::reset()
 {
   pass = 0;
   punch = 0;
   escapee = false;
-  ef = 5.0;
   Ehit = 0;
   Eout = 0;
   travel = 0;
+  if ( type == FG)
+    ef = simconf->fg_min_e;
+  else
+    ef = simconf->ion_min_e;
 }
 
 void ionBase::parent( ionBase *parent )
@@ -53,6 +48,9 @@ void ionBase::parent( ionBase *parent )
   famtree = parent->famtree; // inhereits family tree
   fam_parent = parent->z1;
   famtree.push_back( fam_parent ); // add parent to family tree
+  
+//  if (parent->gen > 0)
+//    hit_e = parent->hit_e;
 
   fam_fuel = parent->fam_fuel;
   fam_fg = parent->fam_fg;
@@ -70,11 +68,6 @@ void ionBase::parent( ionBase *parent )
     pos[i] = parent->pos[i];
     pos0[i] = pos[i];
   }
-  
-  if (z1 <=90 && z1 >= 10)
-    type = LAT;
-  else
-    type = FG;
 }
 
 ionBase* ionBase::spawnRecoil()
@@ -82,6 +75,14 @@ ionBase* ionBase::spawnRecoil()
   ionBase *recoil = new ionBase;
   recoil->parent(this);
   return recoil;
+}
+
+void ionBase::assignType()
+{
+  if (z1 >=90 || z1 <= 10)
+    type = LAT;
+  else
+    type = FG;
 }
 
 double ionBase::RangeInFuel( std::string fueltype )
@@ -142,13 +143,13 @@ double ionBase::RangeInFuel( std::string fueltype )
   return pow(10, lrange);
 }
 
-void ionBase::prep_FF(ionBase *ff)
+void ionBase::prep_FF()
 {
-  ff->gen = 0;
-  ff->fam_fuel = 0;
-  ff->fam_fg = 0;
-  ff->tag = -1; // -1 = born in fuel
-  ff->type = FF;
+  gen = 0;
+  fam_fuel = 0;
+  fam_fg = 0;
+  tag = -1; // -1 = born in fuel
+  type = FF;
 }
 
 void ionBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
@@ -173,7 +174,7 @@ void ionBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
   
   // -- Spawn 1st fission fragment -- //
   ff1 = new ionBase;
-  ff1->prep_FF(ff1);
+  ff1->prep_FF();
   ff1->z1 = Z1;
   ff1->m1 = A1;
   ff1->e  = E1 * 1.0e6; // Change energy units to eV
@@ -197,7 +198,7 @@ void ionBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
   
   // -- Spawn 2nd fission fragments -- //
   ff2 = new ionBase( *ff1 ); // copy constructor
-  ff2->prep_FF(ff2);
+  ff2->prep_FF();
   for( int i = 0; i < 3; ++i )
     ff2->dir[i] *= -1.0; // reverse direction
   ff2->z1 = Z2;

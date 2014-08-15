@@ -5,6 +5,9 @@
 #include <string>
 #include <queue>
 
+#include "invert.h"
+#include "r250.h"
+#include "functions.h"
 #include "simconf.h"
 
 enum ion_type {FF, LAT, FG};
@@ -22,6 +25,8 @@ struct ionBase {
   int fam_fuel, fam_fg, fam_parent;
   
   std::vector<int> famtree; // family tree of ion
+  
+  std::vector<long> hit_e; // energies of each hit
 
   int tag, gen;
   long ionId;
@@ -36,11 +41,12 @@ struct ionBase {
 
   virtual void parent( ionBase* parent );
   virtual ionBase* spawnRecoil();
-
-  void set_ef();
+  
+  virtual void assignType();
+  
   void reset();
   double RangeInFuel( std::string fueltype );
-  virtual void prep_FF(ionBase *ff);
+  virtual void prep_FF();
   static void make_FF( std::queue<ionBase*> &recoils, int fsn_num );
 };
 

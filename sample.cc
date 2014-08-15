@@ -20,14 +20,14 @@ void sampleBase::averages( const ionBase *pka )
     material[i]->average( pka );
 }
 
-void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double smear_den )
+void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double frac_den )
 {
   materialBase *material;
   elementBase *element;
 
   if( fueltype == "uc" ) // uranium carbide
   {
-    material = new materialBase( 13.63 * smear_den ); // rho
+    material = new materialBase( 13.63 * frac_den ); // density in [g/cc]
     element = new elementBase;
     element->z = 92;
     element->m = 238.0;
@@ -41,7 +41,7 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double sme
   }
   else if( fueltype == "un" ) // uranium nitride
   {
-    material = new materialBase( 14.33 * smear_den ); // rho
+    material = new materialBase( 14.33 * frac_den ); // density in [g/cc]
     element = new elementBase;
     element->z = 92;
     element->m = 238.0;
@@ -55,7 +55,7 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double sme
   }
   else if( fueltype == "um" ) // uranium metal
   {
-    material = new materialBase( 19.0 * smear_den ); // rho
+    material = new materialBase( 19.0 * frac_den ); // density in [g/cc]
     element = new elementBase;
     element->z = 92;
     element->m = 238.0;

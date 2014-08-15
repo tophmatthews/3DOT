@@ -5,6 +5,7 @@ CMakeFiles/*
 *.esc
 *.fsn
 *.avgs
+*.hit
 Makefile
 CMakeCache.txt
 config.h

@@ -51,7 +51,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 
     // setup avg max. impact parameter
     epsm = pka->e * material->f; // reduced energy, epsilon
-    eeg = sqrtf( epsm * material->epsdg ); // [TRI02450] reduces to eps * sqrt(tmin/tmax). t1/2 minimum? eq 4.62
+    eeg = sqrtf( epsm * material->epsdg ); // reduces to eps * sqrt(tmin/tmax). t1/2 minimum? eq 4.62
     material->pmax = material->a / ( eeg + sqrtf( eeg ) + 0.125 * pow( eeg, 0.1 ) ); // pmax undefined before here
 
     ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho );
@@ -116,6 +116,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 
       if (simconf->calc_eloss)
         doELoss( pka, material, ls );
+      
+      pka->hit_e.push_back(floor(pka->e));
 
       p1 = sqrtf( 2.0 * pka->m1 * pka->e ); // momentum before collision
       pka->e -= den;                        // subtract energy lost in collision
@@ -184,7 +186,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       recoil->e -= element->Elbind; // subtract lattice binding energy from recoil
       recoil->m1 = element->m;      // assign mass
       recoil->z1 = element->z;      // assign atomic number
-        
+      recoil->assignType();
+      
       // create a random vector perpendicular to pka->dir
       // there is a cleverer way by using the azimuthal angle of scatter...
       do
@@ -230,7 +233,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       }
       
       // put the recoil on the stack
-      if (spawnRecoilLimit() && !terminate && simconf->makeRecoils)
+      if (recoil->e > simconf->spawn_min_e && !terminate && simconf->makeRecoils)
       {
         recoil->tag = material->tag; // mark where new recoil was birthed
         
@@ -239,8 +242,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         
         recoil->ionId = simconf->ionId++;     // set new id then add
         recoils.push( recoil );               // add recoil to stack
-        
-
         
         if (simconf->fullTraj)
         {

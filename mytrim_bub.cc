@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   sampleBase::sampleBoundary bounds = sampleBase::PBC;
   
   bool save_fsnFile   = true;
-  bool save_hitFile   = false;
+  bool save_hitFile   = true;
   bool save_escFile   = true;
   bool save_rangeFile = false;
   
@@ -184,9 +184,9 @@ int main(int argc, char *argv[])
 
         // -- pre-cascade ion analysis/processing -- //
         
-        if( pka->tag >= 0) // if pka is fg
+        if ( pka->type == FG )
         {
-          for( int i = 0; i < 3; ++i )
+          for ( int i = 0; i < 3; ++i )
           {
             pos1[i] = pka->pos[i];
             dif[i] = sample->c[i][pka->tag] - pos1[i];
@@ -198,9 +198,19 @@ int main(int argc, char *argv[])
       
         // -- post-cascade ion analysis/processing -- //
         
-        if( pka->gen == 0 ) // if ff
+        // hitFile info
+        if( save_hitFile && pka->type == FG)
         {
-          if( pass[0] == 0 ) // if first ff
+          // type, escaped, hits [eV]
+          //fprintf( hitFile, "%i, %i, ", pka->type, pka->escapee);
+          for (std::vector<long>::iterator it = pka->hit_e.begin(); it != pka->hit_e.end(); ++it)
+            fprintf( hitFile, "%li, ", *it);
+          fprintf( hitFile, "\n");
+        }
+        
+        if ( pka->type == FF ) // if ff
+        {
+          if ( pass[0] == 0 ) // if first ff
           {
             pass[0]  = pka->pass;
             punch[0] = pka->punch;
@@ -214,26 +224,15 @@ int main(int argc, char *argv[])
           }
         }
         
-        if( pka->tag >= 0 )
+        if (pka->type == FG)
         {
           ++hitNum;
 
-          for( int i = 0; i < 3; ++i )
+          for ( int i = 0; i < 3; ++i )
             dif[i] = sample->c[i][pka->tag] - pka->pos[i];
           fromcenter[1] = sqrt( v_dot( dif, dif ) );
-          
-          // hitFile info
-          if( save_hitFile )
-          {
-            // id, gen, pass, punch, r02cen [pm], rf2cen [pm], travel [pm],
-            fprintf( hitFile, "%li\t%i\t%i\t%i\t", pka->ionId, pka->gen, pka->pass, pka->punch);
-            fprintf( hitFile, "%f\t%f\t%f\t", fromcenter[0], fromcenter[1], pka->travel+0.5);
-            fprintf( hitFile, "%f\t%f\t", pka->Ehit, pka->Eout);
-            fprintf( hitFile, "%i\t%i\t%i", pka->fam_fuel, pka->fam_fg, pka->fam_parent);
-            fprintf( hitFile, "\n");
-          }
         
-          if( pka->escapee )
+          if (pka->escapee)
           {
             ++escNum;
             if( fromcenter[1] < simconf->bub_rad )
@@ -252,7 +251,7 @@ int main(int argc, char *argv[])
       }// end of recoil list
     } // end of single fission
     
-    if( save_fsnFile )
+    if ( save_fsnFile )
     {
       fprintf(fsnFile, "%i\t", n);
       fprintf(fsnFile, "%i\t%.3f\t%i\t%i\t%.1f\t", 1, 1.0, pass[0], punch[0], path[0]);
@@ -263,10 +262,10 @@ int main(int argc, char *argv[])
 
   tend = time(0); // output infoFile data
   
-  if( save_hitFile ) fclose( hitFile );
-  if( save_escFile ) fclose( escFile );
-  if( save_fsnFile ) fclose( fsnFile );
-  if( save_rangeFile ) fclose( rangeFile );
+  if ( save_hitFile ) fclose( hitFile );
+  if ( save_escFile ) fclose( escFile );
+  if ( save_fsnFile ) fclose( fsnFile );
+  if ( save_rangeFile ) fclose( rangeFile );
   
   printf( "==+== %s.%0.f-%0.f Finished ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
   printf( "Simulation time [s]:\t%.0f\n", difftime(tend,tstart));

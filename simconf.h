@@ -17,6 +17,10 @@ struct simconfType {
   double ed, alfa, alpha, tmin, tau, da, cw;
   double mdmin, mdmax; // energy ranges for ion selection
   long int ionId;
+  
+  double spawn_min_e;
+  double ion_min_e;
+  double fg_min_e;
 
   // input from commandline
   std::string run_name, fueltype;

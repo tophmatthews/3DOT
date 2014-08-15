@@ -143,7 +143,7 @@ int main(int argc, char *argv[])
     oldionId = simconf->ionId;
     
     ff1 = new ionBase;
-    ff1->prep_FF(ff1);
+    ff1->prep_FF();
     
     if( mono )
     {
