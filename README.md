@@ -1,6 +1,6 @@
 3DOT
 ====
-3D Oregon State University TRIM
+3D Oregonstate TRIM
 Authored by Topher Matthews
 
 Derived heavily from Daniel Schwen's 3DTrim:
