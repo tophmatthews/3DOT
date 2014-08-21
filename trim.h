@@ -28,9 +28,9 @@ protected:
   bool edged;
 
   virtual void doELoss( ionBase *pka, materialBase *material, double ls);
-  virtual void rangeFix( ionBase *pka, sampleBase *sample, bool& rangefix_flag, double& ls );
+  virtual void rangeFix( ionBase *pka, sampleBase *sample, bool &rangefix_flag, double &ls );
 
-  virtual void Rutherford() {};
+  virtual void setPmax(ionBase *pka, materialBase *material);
   virtual double calcS2(ionBase *pka, materialBase *material);
 };
 

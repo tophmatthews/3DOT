@@ -13,11 +13,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   // make recoil queue available in overloadable functions
   recoil_queue_ptr = &recoils;
 
-  double e0kev = pka->e / 1000.0;
   int ic = 0;
-  double epsm; // reduced energy for (element, material), epsilon
-  double eeg; // t1/2 minimum
-  double ls;  // mean free path
   double s2, c2, ct, st;
   double den;
   double rdir[3], perp[3], norm, psi;
@@ -33,7 +29,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   
   terminate = false;
   edged = false;
-
+  
   if (simconf->fullTraj)
   {
     printf( "\n+++=== ION START pos: %.2f %.2f %.2f ===+++\n", pka->pos[0], pka->pos[1], pka->pos[2]);
@@ -46,15 +42,13 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     material = sample->lookupMaterial( pka->pos );
     if (material == 0)
       break;
+    //cout << pka->travel << endl;
 
     v_norm( pka->dir ); // normalize direction vector
-
-    // setup avg max. impact parameter
-    epsm = pka->e * material->f; // reduced energy, epsilon
-    eeg = sqrtf( epsm * material->epsdg ); // reduces to eps * sqrt(tmin/tmax). t1/2 minimum? eq 4.62
-    material->pmax = material->a / ( eeg + sqrtf( eeg ) + 0.125 * pow( eeg, 0.1 ) ); // pmax undefined before here
-
-    ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho );
+    
+    setPmax( pka, material );
+    
+    double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     
     if (simconf->fullTraj)
       printf( "\nls: %f\n", ls);
@@ -99,11 +93,11 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     }
     else // boundary is not crossed
     {
-      s2 = calcS2(pka, material);
+      s2 = calcS2( pka, material );
       
       c2 = 1.0 - s2;
       ct = 2.0 * c2 - 1.0;        // cos(theta_c)
-      st = sqrtf( 1.0 - ct*ct );  //sin(theta_c)
+      st = sqrtf( 1.0 - ct*ct );  // sin(theta_c)
       
       // energy transferred to recoil atom
       den = element->ec * s2 * pka->e; // T=gamma*E*sin^2(theta_c/2). gamma*E = Tmax
@@ -117,8 +111,11 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       if (simconf->calc_eloss)
         doELoss( pka, material, ls );
       
-      pka->hit_e.push_back(floor(pka->e));
+      pka->hit_e.push_back( floor(pka->e) );
 
+      //if (pka->type == FG)
+      //printf("%.0f, %.0f;\n", pka->e, den);
+      
       p1 = sqrtf( 2.0 * pka->m1 * pka->e ); // momentum before collision
       pka->e -= den;                        // subtract energy lost in collision
       if (pka->e < 0.0)
@@ -131,7 +128,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         pka->pos[i] += pka->dir[i] * ls ;
       
       if (simconf->fullTraj)
-        printf( "HIT pos: %f %f %f   e: %f\n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e);
+        printf( "HIT pos: %f %f %f \te: %f \tT: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, den);
       
       for( int i = 0; i < 3; ++i ) // ion location fix based on Boundary conditions
       {
@@ -268,7 +265,7 @@ void trimBase::doELoss( ionBase *pka, materialBase *material, double ls)
     fprintf( stderr, " electronic energy loss stopped the ion. Broken recoil!!\n" );
 }
 
-void trimBase::rangeFix( ionBase *pka, sampleBase *sample, bool& rangefix_flag, double& ls )
+void trimBase::rangeFix( ionBase *pka, sampleBase *sample, bool &rangefix_flag, double &ls )
 {
   double a = 0;
   double b = 0;
@@ -303,26 +300,47 @@ void trimBase::rangeFix( ionBase *pka, sampleBase *sample, bool& rangefix_flag, 
   }
 }
 
+void trimBase::setPmax(ionBase *pka, materialBase *material)
+{
+  switch ( pka->pot )
+  {
+    case TRIM:
+    {// setup avg max. impact parameter
+      double epsm = pka->e * material->f; // reduced energy, epsilon
+      double eeg = sqrtf( epsm * material->epsdg ); // chi (newtrim eq 7-41)
+      material->pmax = material->a / ( eeg + sqrtf( eeg ) + 0.125 * pow( eeg, 0.1 ) ); // sets pmax (newtrim 7-40)
+      break;
+    }
+    case RUTHERFORD:
+    {
+      double b_0 = pka->e * material->f / material->a; // reduced energy, epsilon
+      double pmax_from_eng = b_0 / 2 * sqrt( material->gamma * pka->e / simconf->tmin - 1 );
+      
+      double sin2_min = sqr( sin( simconf->angmin * M_PI / 180) );
+      double pmax_from_ang = b_0 / 2 * sqrt( 1 / sin2_min - 1);
+      
+      material->pmax = (pmax_from_eng > pmax_from_ang) ? pmax_from_eng : pmax_from_ang ;
+      break;
+    }
+    case HARDSPHERE:
+    {
+      material->pmax = simconf->scoef[pka->z1-1].radius + material->maxr;
+      break;
+    }
+    case NONE:
+    {
+      material->pmax = 100; // arbitrary
+      break;
+    }
+  }
+}
+
 double trimBase::calcS2(ionBase *pka, materialBase *material)
 {
-  potentials pot;
-  switch (pka->type)
-  {
-    case FF:
-      pot = simconf->pot_ff;
-      break;
-    case LAT:
-      pot = simconf->pot_lat;
-      break;
-    case FG:
-      pot = simconf->pot_fg;
-      break;
-  }
-  
   double r2 = dr250();
   double hh = dr250();
   
-  // choose impact parameter
+  // choose impact parameter: pmax set in trimBase::calcLs.
   double p = material->pmax * sqrtf( r2 ); // random p, weighted towards pmax
   
   // determine which atom in the material will be hit
@@ -335,11 +353,11 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
   }
   element = material->element[nn];
   
-  double eps = element->fi * pka->e; // epsilon of given element REDEFINED HERE!!
+  double eps = element->fi * pka->e; // epsilon of given element
   double b = p / element->ai;        // reduced impact parameter
   
   double s2;
-  switch (pot)
+  switch (pka->pot)
   {
     case NONE:
       s2 = 0;
@@ -347,11 +365,10 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
     case HARDSPHERE:
     {
       double R = simconf->scoef[pka->z1-1].radius + simconf->scoef[element->z-1].radius;
-      if (p > R)
+      if ( p > R)
         s2 = 0;
       else
         s2 = 1 - sqr( p / R );
-      //cout << "r1: " << simconf->scoef[pka->z1-1].radius << " r12: " << simconf->scoef[element->z-1].radius << " p: " << p << " R: " << R << endl;
       break;
     }
     case RUTHERFORD:
@@ -421,6 +438,9 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
         double c2 = co*co; //cosine(theta/2)^2
         s2 = 1.0 - c2; //sin(theta/2)^2 = 1-cos(theta/2)^2
       } // end MAGIC formulation
+      //if ( pka->z1 == 92 && element->z == 92)
+        //printf("%f %f\n", p, s2);
+      //printf("p: %f \tpka->z: %i \ttarg->z: %i  \ts2: %f \n", p, pka->z1, element->z, s2);
       break;
     }
   }
