@@ -14,7 +14,7 @@ struct scoefLine {
 enum potentials {NONE, HARDSPHERE, RUTHERFORD, TRIM};
 
 struct simconfType {
-  double ed, alfa, alpha, tmin, tau, da, cw;
+  double ed, alfa, alpha, tmin, angmin, da, cw;
   double mdmin, mdmax; // energy ranges for ion selection
   long int ionId;
   

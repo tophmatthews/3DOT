@@ -12,9 +12,8 @@ simconfType::simconfType( double _alfa )
   ed = 25.0; // displacement energy
   alfa = _alfa; // angle of incidence (degrees)
   alpha = alfa * M_PI / 180.0;
-  tmin = 1.0; //max impact parameter set by min. transferred energy
-  //tmin = 5.0; //max impact parameter set by min. transferred energy
-  tau = 0.0;
+  tmin = 1.0; // Minimum transferred energy
+  angmin = 10; // minimum angle
   da = 3.0; // angular grid for transmitted ions
   cw = 0.001; // channel width 1% of layer thickness
   mdmin = 10; // [eV] lower energy limit for ion tracking
@@ -30,7 +29,7 @@ simconfType::simconfType( double _alfa )
   AddAndKill  = true;  // range estimation for gas atoms that reach box boundary
   calc_eloss  = true;
   
-  // Declare potentials for atoms (NONE, HARDSPHERE, RUTHERFORD, TRIM
+  // Declare potentials for atoms (NONE, HARDSPHERE, RUTHERFORD, TRIM)
   pot_ff  = TRIM;
   pot_fg  = TRIM;
   pot_lat = TRIM;
