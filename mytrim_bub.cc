@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
   sampleBase::sampleBoundary bounds = sampleBase::PBC;
   
   bool save_fsnFile   = true;
-  bool save_hitFile   = true;
+  bool save_hitFile   = false;
   bool save_escFile   = true;
   bool save_rangeFile = false;
   
