@@ -12,8 +12,8 @@ using namespace std;
 struct materialBase {
   double rho;
 
-  double am, az; // average mass and atomic number
-  double arho, mu;
+  double am, az, ar, maxr; // average mass and atomic number
+  double arho, mu, gamma;
   double a, f, epsdg;
   double fd, kd, pmax;
 

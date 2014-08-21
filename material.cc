@@ -27,13 +27,16 @@ void materialBase::prepare()
 
   am = 0.0; // average mass of elements in material
   az = 0.0; // average atomic number of elements in material
-  
+  ar = 0.0; // average atomic radius of elements in material
+  maxr = 0.0; // largest atomic radius of elements in material
   for( int i = 0; i < element.size(); i++ ) 
   {
     am += element[i]->m * element[i]->t;
     az += double( element[i]->z ) * element[i]->t;
+    ar += simconf->scoef[element[i]->z-1].radius;
+    maxr = (simconf->scoef[element[i]->z-1].radius > maxr) ? simconf->scoef[element[i]->z-1].radius : maxr;
   }
-  cout << am << endl;
+  
   // rho is bulk density in g/cc: [atoms/A] = [g/cc][atoms/mol][cc/A^3] / [avg g/mol]
   arho = rho * 0.6022 / am; // atomic density of material [atoms/Ang^3]
 }
@@ -45,15 +48,19 @@ void materialBase::average( const ionBase *pka )
 
   double a0 = 0.5292; // [A] bohr radius in angstroms
   double e2 = 14.4; // [ev*A] squared charge of electron
-  double gamma = ( 4.0 * mu ) / sqr( 1.0 + mu ); // gamma using average material mass
+  gamma = ( 4.0 * mu ) / sqr( 1.0 + mu ); // gamma using average material mass
   
   // universal stopping distance for material (old TRIM eq. 2-60)
   a = 0.8854 * a0 / ( pow( double(pka->z1), 0.23 ) + pow( az, 0.23 ) );
 
+  // Center of mass average mass
+  // Mc = pka->m1 * am / ( pka->m1 + am );
   // mean flight path
-  // f = eps/E weighted by am / ( m1+am)(new TRIM eq 7-5)
+  // f = eps/E_0 (new TRIM eq 7-5): Ec = (E0 M_tar) / (Mpka + M_tar) (new trim 2-78)
   f = a * am / ( double(pka->z1) * az * e2 * ( pka->m1 + am ) );
   //eps0 = e0 * f;
+  
+  //setup for pmax calc: reduces to psi^2 / eps (newtrim eq 7-41
   epsdg = simconf->tmin * f / gamma; // reduces to epsilon*tmin/tmax
 
   // fd and kd determine how much recoil energy goes into el. loss and vaccancies
@@ -68,10 +75,10 @@ void materialBase::average( const ionBase *pka )
     // universal stopping distance
     element[i]->ai = a0 * .8854 / ( pow( double(pka->z1), 0.23 ) + pow( element[i]->z, 0.23 ) );
     
-    // f = eps/E weighted by am / ( m1+am)(new TRIM eq 7-5)
+    // f = eps/E (new TRIM eq 7-5)
     element[i]->fi = element[i]->ai * element[i]->m / 
                      ( double(pka->z1) * double(element[i]->z) * e2 * ( pka->m1 + element[i]->m ) );
-  }
+  }  
   dirty = false;
 }
 
