@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
   double pathmax;
   
   char fname[200];
-  if( argc !=  7 ) // check if arguments are passed
+  if( argc !=  8 ) // check if arguments are passed
   {
     //fprintf( stderr, "aasyntax:\n%s basename r Cbfactor\n\nCbfactor=1 => 7e-4 bubbles/nm^3\n", argv[0] );
     fprintf( stderr, "syntax: filename, fueltype, Z, M, E[keV], #");
@@ -78,11 +78,13 @@ int main(int argc, char *argv[])
   
   // Convert inputs to floats   
   
-  double length = 1000000; // size of box in A.
+  double length = 10000000; // size of box in A.
   double zin = atof( argv[3] );    // z of ion
   double min = atof( argv[4] );    // mass of ion
   double ein = atof( argv[5] );    // energy of ion in keV
   double fissions = atof( argv[6] ); // number of ions to run
+  
+  
   
   bool mono = true;
   if( zin == 0 || min == 0 || ein == 0 )
@@ -101,6 +103,15 @@ int main(int argc, char *argv[])
   simconf->makeRecoils = false;
   simconf->BoundaryFix = false;
   simconf->AddAndKill  = false;
+  
+  if (atof(argv[7]) == 1)
+  {
+    printf( "Legacy calculation on\n");
+    simconf->pot_ff = RUTHERFORD;
+    simconf->pot_fg = HARDSPHERE;
+    simconf->pot_lat = HARDSPHERE;
+    simconf->calc_eloss = false;
+  }
   
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
   sampleClusters *sample = new sampleClusters( length, length, length, bounds );
@@ -209,7 +220,7 @@ int main(int argc, char *argv[])
         crows.push_back(crow);
         path.push_back(pka->travel);
         
-        if( (n % 1000) == 0 )
+        if( (n % 10) == 0 )
         {
           rangeavg = 0;
           for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;
