@@ -23,6 +23,7 @@ struct ionBase {
   bool escapee;
   double Ehit, Eout;
   int fam_fuel, fam_fg, fam_parent;
+  potentials pot;
   
   std::vector<int> famtree; // family tree of ion
   

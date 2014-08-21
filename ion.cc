@@ -33,11 +33,23 @@ void ionBase::reset()
   escapee = false;
   Ehit = 0;
   Eout = 0;
-  travel = 0;
+  travel = 0.0;
   if ( type == FG)
     ef = simconf->fg_min_e;
   else
     ef = simconf->ion_min_e;
+  switch (type)
+  {
+    case FF:
+      pot = simconf->pot_ff;
+      break;
+    case LAT:
+      pot = simconf->pot_lat;
+      break;
+    case FG:
+      pot = simconf->pot_fg;
+      break;
+  }
 }
 
 void ionBase::parent( ionBase *parent )
@@ -83,6 +95,8 @@ void ionBase::assignType()
     type = LAT;
   else
     type = FG;
+  reset();
+    
 }
 
 double ionBase::RangeInFuel( std::string fueltype )
@@ -150,6 +164,7 @@ void ionBase::prep_FF()
   fam_fg = 0;
   tag = -1; // -1 = born in fuel
   type = FF;
+  pot = simconf->pot_fg;
 }
 
 void ionBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
