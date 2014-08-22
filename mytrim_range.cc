@@ -220,7 +220,7 @@ int main(int argc, char *argv[])
         crows.push_back(crow);
         path.push_back(pka->travel);
         
-        if( (n % 10) == 0 )
+        if( (n % 1) == 0 )
         {
           rangeavg = 0;
           for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;

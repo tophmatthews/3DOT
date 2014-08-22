@@ -164,7 +164,7 @@ void ionBase::prep_FF()
   fam_fg = 0;
   tag = -1; // -1 = born in fuel
   type = FF;
-  pot = simconf->pot_fg;
+  pot = simconf->pot_ff;
 }
 
 void ionBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )

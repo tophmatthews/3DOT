@@ -313,7 +313,7 @@ void trimBase::setPmax(ionBase *pka, materialBase *material)
     }
     case RUTHERFORD:
     {
-      double b_0 = pka->e * material->f / material->a; // reduced energy, epsilon
+      double b_0 = material->a / material->f / pka->e; // reduced energy, epsilon
       double pmax_from_eng = b_0 / 2 * sqrt( material->gamma * pka->e / simconf->tmin - 1 );
       
       double sin2_min = sqr( sin( simconf->angmin * M_PI / 180) );

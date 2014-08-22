@@ -12,7 +12,7 @@ simconfType::simconfType( double _alfa )
   ed = 25.0; // displacement energy
   alfa = _alfa; // angle of incidence (degrees)
   alpha = alfa * M_PI / 180.0;
-  tmin = 1.0; // Minimum transferred energy
+  tmin = 10.0; // Minimum transferred energy
   angmin = 10; // minimum angle
   da = 3.0; // angular grid for transmitted ions
   cw = 0.001; // channel width 1% of layer thickness
