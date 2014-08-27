@@ -1,18 +1,23 @@
 # My adds #
 ###########
 *.out
-CMakeFiles/*
+*/CMakeFiles/*
+/CMakeFiles/*
 *.esc
 *.fsn
 *.avgs
 *.hit
 Makefile
+*/Makefile
 CMakeCache.txt
+*/CMakeCache.txt
 config.h
 libmytrim.a
+alglib/libalglib.a
 mytrim_bub
 mytrim_range
 cmake_install.cmake
+*/cmake_install.cmake
 
 # Compiled source #
 ###################
