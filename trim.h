@@ -32,6 +32,7 @@ protected:
 
   virtual void setPmax(ionBase *pka, materialBase *material);
   virtual double calcS2(ionBase *pka, materialBase *material);
+  virtual void calcTestS2(ionBase *pka, materialBase *material);
 };
 
 #endif

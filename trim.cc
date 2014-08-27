@@ -93,6 +93,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     }
     else // boundary is not crossed
     {
+      //xcalcTestS2(pka, material);
+      
       s2 = calcS2( pka, material );
       
       c2 = 1.0 - s2;
@@ -446,4 +448,122 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
   }
   return s2;
 }
+
+void trimBase::calcTestS2(ionBase *pka, materialBase *material)
+{
+  double r2 = dr250();
+  double hh = dr250();
   
+  // choose impact parameter: pmax set in trimBase::calcLs.
+  //double p = material->pmax * sqrtf( r2 ); // random p, weighted towards pmax
+  double p = 1.25;
+
+  // determine which atom in the material will be hit
+  int nn;
+//  for (nn = 0; nn < material->element.size(); nn++)
+//  {
+//    hh -= material->element[nn]->t; // hh is random number
+//    if( hh <= 0 )
+//      break;
+//  }
+  
+  nn = 0;
+  element = material->element[nn];
+  cout << element->z << endl;
+  
+  double eps = element->fi * pka->e; // epsilon of given element
+  double b = p / element->ai;        // reduced impact parameter
+  
+  double s2;
+  cout << pka->pot << endl;
+  switch (pka->pot)
+  {
+    case NONE:
+      s2 = 0;
+      break;
+    case HARDSPHERE:
+    {
+      double R = simconf->scoef[pka->z1-1].radius + simconf->scoef[element->z-1].radius;
+      cout << "p: " << p << " R: " << R << endl;
+      if ( p > R)
+        s2 = 0;
+      else
+        s2 = 1 - sqr( p / R );
+      break;
+    }
+    case RUTHERFORD:
+      s2 = 1.0 / ( 1.0 + sqr( 2.0 * eps * b ) ); // sin^2(theta_c/2) [SRIM eq. 7-15];
+      break;
+    case TRIM:
+    {
+      if (eps > 10.0)
+      {
+        // use rutherford scattering. includes correction (1+b*(1+b))
+        s2 = 1.0 / ( 1.0 + ( 1.0 + b * ( 1.0 + b ) ) * sqr( 2.0 * eps * b ) ); // sin^2(theta_c/2) [SRIM eq. 7-15]
+      }
+      
+      else
+      {
+        // first guess at ion c.p.a.
+        double r = b;
+        double rr = -2.7 * logf( eps * b );
+        if( rr >= b )
+        {
+          r = rr;
+          rr = -2.7 * logf( eps * rr );
+          if( rr >= b ) r = rr;
+        }
+        
+        double q, v, v1;
+        
+        // Constants for universal potentail, from [SRIM table 4-1]
+        double u_c1 = 0.99229;
+        double u_c2 = 0.011615;
+        double u_c3 = 0.007122;
+        double u_c5 = 9.3066;
+        double u_c4 = 14.813;
+        
+        do
+        { // Newton's method for r_0: distance of closest approach
+          // universal
+          // r = reduced radius x, or r/a_u
+          double ex1 = 0.18175 * exp( -3.1998 * r ); // [SRIM eq. 2-74]
+          double ex2 = 0.50986 * exp( -0.94229 * r );
+          double ex3 = 0.28022 * exp( -0.4029 * r );
+          double ex4 = 0.028171 * exp( -0.20162 * r );
+          v = ( ex1 + ex2 + ex3 + ex4 ) / r; // universal screening function / reduced radius
+          v1 = -( v + 3.1998 * ex1 + 0.94229 * ex2 + 0.4029 * ex3 + 0.20162 * ex4 ) / r; // -dv/dr
+          
+          double fr = b*b / r + v * r / eps - r; // similar to [SRIM eq. 7-2] but really denomenator in [SRIM eq. 2-79]
+          double fr1 = - b*b / ( r*r ) + ( v + v1 * r ) / eps - 1.0; // d(fr)/dr
+          q = fr / fr1; // f(x0)/f'(x0)
+          r -= q; // Newton's method -> x1 = x0 - f(x0)/f'(x0)
+        } while( fabs( q / r ) > 0.001 ); // Convergence criteria
+        
+        double roc = -2.0 * ( eps - v ) / v1; // R_c [SRIM eq. 7-7], calculated from 7-4
+        double sqe = sqrtf( eps ); // square root of epsilon
+        
+        // b = p/a [SRIM eq. 7-7]
+        // 5-parameter magic scattering calculation (universal pot.)
+        double cc = ( u_c2 + sqe ) / ( u_c3 + sqe ); // [SRIM eq. 7-12] beta
+        double aa = 2.0 * eps * ( 1.0 + ( u_c1 / sqe ) ) * pow( b, cc ); // [SRIM eq. 7-11] A
+        
+        double ff = ( sqrtf( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) );
+        //ff = 1 / ( sqrtf( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) ); // [SRIM eq. 7-11] G
+        
+        double delta = ( r - b ) * aa * ff / ( ff + 1.0 );
+        //delta =( r - b ) * aa / ( ff + 1.0 ); // [SRIM eq. 7-10]
+        
+        double co = ( b + delta + roc ) / ( r + roc ); // MAGIC formula: cosine(theta/2) [SRIM eq. 7-8]
+        double c2 = co*co; //cosine(theta/2)^2
+        s2 = 1.0 - c2; //sin(theta/2)^2 = 1-cos(theta/2)^2
+      } // end MAGIC formulation
+      //if ( pka->z1 == 92 && element->z == 92)
+      //printf("%f %f\n", p, s2);
+      //printf("p: %f \tpka->z: %i \ttarg->z: %i  \ts2: %f \n", p, pka->z1, element->z, s2);
+      break;
+    }
+  }
+  cout << p << ", " << pka->e << ", " << s2 << endl;
+}
+
