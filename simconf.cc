@@ -22,7 +22,7 @@ simconfType::simconfType( double _alfa )
   spawn_min_e = 300;
   fg_min_e = 5;
   ion_min_e = 300;
-
+  
   fullTraj    = false; // output full trajectories
   makeRecoils = true;  // make recoils
   BoundaryFix = true;  //

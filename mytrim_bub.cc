@@ -36,9 +36,16 @@
 #include "invert.h"
 #include "sample.h"
 #include "functions.h"
+#include "bubble.h"
 
 int main(int argc, char *argv[])
 {
+  if( argc != 7 ) // check if arguments are passed
+  {
+    fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype legacy");
+    return 1;
+  }
+  
   time_t tstart, tend;
   tstart = time(0);
   
@@ -55,11 +62,6 @@ int main(int argc, char *argv[])
   bool save_escFile   = true;
   bool save_rangeFile = false;
   
-  if( argc != 7 ) // check if arguments are passed
-  {
-    fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype legacy");
-    return 1;
-  }
 
   // initialize global parameter structure and read data tables from file
   simconf = new simconfType;
@@ -80,7 +82,6 @@ int main(int argc, char *argv[])
   
   printf( "==+== %s.%0.f-%0.f Started ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
   
-  
   // seed randomnumber generator from system entropy pool
   FILE *urand = fopen( "/dev/random", "r" );
   int seed;
@@ -90,9 +91,6 @@ int main(int argc, char *argv[])
 
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
   sampleClusters *sample = new sampleClusters( simconf->length, simconf->length, simconf->length, bounds );
-  
-  // initialize trim engine for the sample
-  trimBase *trim = new trimBase( sample );
 
   sample->initSpatialhash( int( sample->w[0] / simconf->bub_rad ) - 1,
                            int( sample->w[1] / simconf->bub_rad ) - 1,
@@ -100,11 +98,19 @@ int main(int argc, char *argv[])
 
   sample->addCluster( simconf->length/2, simconf->length/2, simconf->length/2, simconf->bub_rad); // Add bubble in center of box
   sample->make_fuel( simconf->fueltype, sample, 0.9 );
-  double bub_den = calc_rho(simconf->bub_rad, 132.0);
-  sample->make_fg( simconf->fueltype, sample, bub_den, false );
-
+  
   fprintf( stderr, "%s sample built.\n", simconf->fueltype.c_str() );
-  std::cout << "Bubble density [g/cc]: " << bub_den << endl;
+  
+  // initialize trim engine for the sample
+  trimBase *trim = new trimBase( sample );
+  
+  // initialze bubble structure.
+  bubbleBase *bubble = new bubbleBase(2000, bubbleBase::RONCHI);
+  
+  //double bub_den = calc_rho(simconf->bub_rad, 132.0);
+  sample->make_fg( sample, bubble->rho, false );
+
+  std::cout << "Bubble density [g/cc]: " << bubble->rho << endl;
   
   // create a FIFO for recoils
   queue<ionBase*> recoils;

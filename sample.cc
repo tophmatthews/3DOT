@@ -71,7 +71,7 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double fra
   sample->material.push_back( material ); // add material to sample
 }
 
-void sampleBase::make_fg( std::string fueltype, sampleBase *sample, double bub_den, bool xe_only )
+void sampleBase::make_fg( sampleBase *sample, double bub_den, bool xe_only )
 {
   materialBase *material;
   elementBase *element;

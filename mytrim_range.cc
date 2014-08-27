@@ -119,7 +119,8 @@ int main(int argc, char *argv[])
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
   
-  sample->make_fuel( simconf->fueltype, sample, 0.9 );
+  //sample->make_fuel( simconf->fueltype, sample, 0.9 );
+  sample->make_fg( sample, 5, true );
   
   // create a FIFO for recoils
   queue<ionBase*> recoils;
@@ -147,7 +148,17 @@ int main(int argc, char *argv[])
   massInverter *m = new massInverter;
   energyInverter *e = new energyInverter;
   
-  cout << "# ion, rangeavg, crowsavg, pathavg" << endl;
+  printf("Fueltype: %s\n", argv[2]);
+  
+  if (mono)
+  {
+    printf("Monoenergetic ion mode on");
+    printf("Z: %0.1f \tM: %0.1f \t E[eV]: %0.1f\n", zin, min, ein);
+  }
+  else
+    printf("FF ion mode on");
+  
+  cout << "# ion, rangeavg, crowsavg, pathavg" << endl << endl;
   // Start fissions
   for( int n = 1; n <= fissions; n++ )
   {
