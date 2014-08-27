@@ -1,14 +1,17 @@
 #include "bubble.h"
 
-bubbleBase::bubbleBase(double temp, eos model)
+bubbleBase::bubbleBase()
 {
   _rad = simconf->bub_rad;
-  _temp = temp;
+  if(simconf->bub_model > 20)
+    _temp = 2000;
+  else
+    _temp = 1000;
   
-  if ( _rad > 1000 )
+  if ( simconf->bub_model == 21 || simconf->bub_model == 11 || _rad > 1000 )
     _model = VDW;
   else
-    _model = model;
+    _model = RONCHI;
   
   calcArho();
 }
@@ -52,5 +55,5 @@ void bubbleBase::calcArho( )
   }
   rho = arho / 6.022e23 * m / 1e6; // g/cc
 
-  //std::cout << "rho: " << rho << " arho: " << arho << endl;
+  std::cout << "rho: " << rho << " arho: " << arho << endl;
 }

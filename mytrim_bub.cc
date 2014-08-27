@@ -40,7 +40,7 @@
 
 int main(int argc, char *argv[])
 {
-  if( argc != 7 ) // check if arguments are passed
+  if( argc != 8 ) // check if arguments are passed
   {
     fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype legacy");
     return 1;
@@ -79,7 +79,9 @@ int main(int argc, char *argv[])
     simconf->pot_lat = HARDSPHERE;
     simconf->calc_eloss = false;
   }
-  
+
+  simconf->bub_model = atof( argv[7] );
+
   printf( "==+== %s.%0.f-%0.f Started ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
   
   // seed randomnumber generator from system entropy pool
@@ -103,9 +105,8 @@ int main(int argc, char *argv[])
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
-  
   // initialze bubble structure.
-  bubbleBase *bubble = new bubbleBase(2000, bubbleBase::RONCHI);
+  bubbleBase *bubble = new bubbleBase();
   
   //double bub_den = calc_rho(simconf->bub_rad, 132.0);
   sample->make_fg( sample, bubble->rho, false );

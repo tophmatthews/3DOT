@@ -14,7 +14,7 @@ struct bubbleBase {
   
   enum eos {VDW, RONCHI};
   
-  bubbleBase(double temp, eos model);
+  bubbleBase();
   
   eos _model;
   

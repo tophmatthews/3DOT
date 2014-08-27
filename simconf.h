@@ -25,6 +25,7 @@ struct simconfType {
   // input from commandline
   std::string run_name, fueltype;
   double bub_rad, length, fissions;
+  double bub_model;
   
   // tables from files
   scoefLine scoef[92];
