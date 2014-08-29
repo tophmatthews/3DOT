@@ -51,9 +51,10 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     
     double minls =cbrt( 1 / material->arho);
+    
     ls = (ls > minls ? ls : minls);
     
-    cout << "pmax: " << material->pmax << " ls: " << ls << endl;
+    //cout << "pmax: " << material->pmax << " ls: " << ls << endl;
     
     if (simconf->fullTraj)
       printf( "\nls: %f\n", ls);
