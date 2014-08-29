@@ -18,6 +18,7 @@ simconfType::simconfType( double _alfa )
   cw = 0.001; // channel width 1% of layer thickness
   mdmin = 10; // [eV] lower energy limit for ion tracking
   mdmax = 12000; // [eV] upper energy limit for ion tracking
+  latp = 2.5; // [Ang] lattice parameter
   
   spawn_min_e = 300;
   fg_min_e = 5;

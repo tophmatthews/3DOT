@@ -17,6 +17,7 @@ struct simconfType {
   double ed, alfa, alpha, tmin, angmin, da, cw;
   double mdmin, mdmax; // energy ranges for ion selection
   long int ionId;
+  double latp;
   
   double spawn_min_e;
   double ion_min_e;

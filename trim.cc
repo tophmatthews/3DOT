@@ -50,6 +50,11 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     
+    double minls =cbrt( 1 / material->arho);
+    ls = (ls > minls ? ls : minls);
+    
+    cout << "pmax: " << material->pmax << " ls: " << ls << endl;
+    
     if (simconf->fullTraj)
       printf( "\nls: %f\n", ls);
 
@@ -93,8 +98,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     }
     else // boundary is not crossed
     {
-      //xcalcTestS2(pka, material);
-      
       s2 = calcS2( pka, material );
       
       c2 = 1.0 - s2;
@@ -255,6 +258,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       
     } // endif for Rangefix == false
   } while (pka->e > pka->ef && !terminate);
+  
   
   if (simconf->fullTraj && pka->tag >= 0 ) printf( "\n");
   if (simconf->fullTraj ) printf("particle killed \n\n");

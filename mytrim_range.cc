@@ -119,8 +119,8 @@ int main(int argc, char *argv[])
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
   
-  //sample->make_fuel( simconf->fueltype, sample, 0.9 );
-  sample->make_fg( sample, 5, true );
+  sample->make_fuel( simconf->fueltype, sample, 1.0 );
+  //sample->make_fg( sample, 5, true );
   
   // create a FIFO for recoils
   queue<ionBase*> recoils;

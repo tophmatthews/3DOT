@@ -224,3 +224,21 @@ void ionBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
   
   printf( "%s Fsn %i/%.0f Z1=%d (%.2f MeV)\t Z2=%d (%.2f MeV)\n", simconf->run_name.c_str(), fsn_num, simconf->fissions, Z1, E1, Z2, E2 );
 }
+
+void ionBase::calcLs()
+{
+  using namespace std;
+  double latp = simconf->latp;
+  
+  double testPos[3];
+  for ( int i = 0; i<3; ++i)
+  {
+    testPos[i] = pos[i]; // copy value over
+    testPos[i] += dir[i] * latp;
+  }
+  
+  
+  
+  
+  // move ion one latp
+}
