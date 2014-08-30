@@ -159,7 +159,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
               if (pka->pos[i] < 0) // protection for too big a box, negative direction
               {
                 printf("Failure in Trim.cc: simulation box too small. Ion wrapped around box in negative direction\n" );
-                printf("dim: %i pos: %f w: %f\n", i, pka->pos[i], sample->w[i]);
+                printf("ls: %f dim: %i pos: %f w: %f\n",ls,  i, pka->pos[i], sample->w[i]);
                 exit (EXIT_FAILURE);
               }
             }
@@ -175,7 +175,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
               if (wrap > 1) // protection for too big a box
               {
                 printf("Failure in Trim.cc: simulation box is too small. Ion wrapped around box in positive direction\n" );
-                printf("wrap: %f dim: %i pos: %f w: %f\n", wrap, i, pka->pos[i], sample->w[i]);
+                printf("ls: %f wrap: %f dim: %i pos: %f w: %f\n", ls, wrap, i, pka->pos[i], sample->w[i]);
                 exit (EXIT_FAILURE);
               }
               else
