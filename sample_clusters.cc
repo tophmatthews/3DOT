@@ -151,8 +151,13 @@ void sampleClusters::addCluster( double x, double y, double z, double r )
   int k[3], i, l;
   double cb[4];
 
-  if( cn >= cnm ) reallocClusters( cnm + cnm/10 + 10 ); // get 10% more slots plus 10
-  c[0][cn] = x; c[1][cn] = y; c[2][cn] = z; c[3][cn] = r;
+  if( cn >= cnm )
+    reallocClusters( cnm + cnm/10 + 10 ); // get 10% more slots plus 10
+  
+  c[0][cn] = x;
+  c[1][cn] = y;
+  c[2][cn] = z;
+  c[3][cn] = r;
 
   for( int i = 0; i < 3; i++ ) 
   {
@@ -161,7 +166,8 @@ void sampleClusters::addCluster( double x, double y, double z, double r )
   }
 
   l = k[0] + kn[0] * ( k[1] + kn[1] * k[2] );
-  if( sh[l] < 0 ) sh[l] = cn;
+  if( sh[l] < 0 )
+    sh[l] = cn;
   else
   {
     l = sh[l];

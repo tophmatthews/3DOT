@@ -31,6 +31,7 @@
 
 #include "simconf.h"
 #include "sample_clusters.h"
+#include "sample_single.h"
 #include "ion.h"
 #include "trim.h"
 #include "invert.h"
@@ -92,13 +93,8 @@ int main(int argc, char *argv[])
   r250_init( seed<0 ? -seed : seed ); // random generator goes haywire with neg. seed
 
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
-  sampleClusters *sample = new sampleClusters( simconf->length, simconf->length, simconf->length, bounds );
+  sampleSingle *sample = new sampleSingle( simconf->length, simconf->length, simconf->length, bounds );
 
-  sample->initSpatialhash( int( sample->w[0] / simconf->bub_rad ) - 1,
-                           int( sample->w[1] / simconf->bub_rad ) - 1,
-                           int( sample->w[2] / simconf->bub_rad ) - 1 );
-
-  sample->addCluster( simconf->length/2, simconf->length/2, simconf->length/2, simconf->bub_rad); // Add bubble in center of box
   sample->make_fuel( simconf->fueltype, sample, 0.9 );
   
   fprintf( stderr, "%s sample built.\n", simconf->fueltype.c_str() );
@@ -196,7 +192,7 @@ int main(int argc, char *argv[])
           for ( int i = 0; i < 3; ++i )
           {
             pos1[i] = pka->pos[i];
-            dif[i] = sample->c[i][pka->tag] - pos1[i];
+            dif[i] = sample->w[i] - pos1[i];
           }
           fromcenter[0] = sqrt( v_dot( dif, dif ) );
         }
@@ -236,7 +232,7 @@ int main(int argc, char *argv[])
           ++hitNum;
 
           for ( int i = 0; i < 3; ++i )
-            dif[i] = sample->c[i][pka->tag] - pka->pos[i];
+            dif[i] = sample->w[i] - pka->pos[i];
           fromcenter[1] = sqrt( v_dot( dif, dif ) );
         
           if (pka->escapee)

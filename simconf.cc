@@ -20,6 +20,8 @@ simconfType::simconfType( double _alfa )
   mdmax = 12000; // [eV] upper energy limit for ion tracking
   latp = 2.5; // [Ang] lattice parameter
   
+  bub_rad = 0; // initiallization of bubble radius
+  
   spawn_min_e = 300;
   fg_min_e = 5;
   ion_min_e = 300;

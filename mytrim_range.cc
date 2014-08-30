@@ -32,7 +32,7 @@
 #include <algorithm>
 
 #include "simconf.h"
-#include "sample_clusters.h"
+#include "sample_single.h"
 #include "ion.h"
 #include "trim.h"
 #include "invert.h"
@@ -114,7 +114,7 @@ int main(int argc, char *argv[])
   }
   
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
-  sampleClusters *sample = new sampleClusters( length, length, length, bounds );
+  sampleSingle *sample = new sampleSingle( length, length, length, bounds );
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
@@ -231,7 +231,7 @@ int main(int argc, char *argv[])
         crows.push_back(crow);
         path.push_back(pka->travel);
         
-        if( (n % 1) == 0 )
+        if( (n % 100) == 0 )
         {
           rangeavg = 0;
           for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;

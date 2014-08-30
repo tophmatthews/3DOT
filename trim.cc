@@ -33,13 +33,15 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   if (simconf->fullTraj)
   {
     printf( "\n+++=== ION START pos: %.2f %.2f %.2f ===+++\n", pka->pos[0], pka->pos[1], pka->pos[2]);
-    printf( "    z: %i  e: %f \n", pka->z1, pka->e);
+    printf( "     ion z: %i  e: %f \n", pka->z1, pka->e);
   }
   
   do // cycle for each collision
   {
     ++ic; // number of collisions for each ion in each material
     material = sample->lookupMaterial( pka->pos );
+    if (simconf->fullTraj)
+      cout << "in material with avg z: " << material->az << endl;
     if (material == 0)
       break;
     //cout << pka->travel << endl;
@@ -95,7 +97,10 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         pka->pos[i] += ls * pka->dir[i]; // update position
       
       if (simconf->fullTraj)
+      {
         printf( "CROSS at pos: %.2f %.2f %.2f e: %f ls*u: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, ls );
+        printf( "Leaving material with average Z %0.1f\n", material->az);
+      }
     }
     else // boundary is not crossed
     {

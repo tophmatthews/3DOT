@@ -198,17 +198,26 @@ void ionBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
   // Random direction
   do
   {
-    for( int i = 0; i < 3; ++i ) ff1->dir[i] = dr250() - 0.5;
+    for( int i = 0; i < 3; ++i )
+      ff1->dir[i] = dr250() - 0.5;
     norm = v_dot( ff1->dir, ff1->dir );
   } while( norm <= 0.0001 );
   v_scale( ff1->dir, 1.0 / sqrtf( norm ) );
   
   // random origin
+  double R;
+  do {
+    R = 0;
+    for( int i = 0; i < 3; ++i )
+    {
+      ff1->pos[i] = dr250() * simconf->length;
+      R += sqr( simconf->length/2 - ff1->pos[i] );
+    }
+    R = sqrt(R);
+  } while (R < simconf->bub_rad);
+  
   for( int i = 0; i < 3; ++i )
-  {
-    ff1->pos[i] = dr250() * simconf->length;
     ff1->pos0[i] = ff1->pos[i]; // set orinal position
-  }
   recoils.push( ff1 );
   
   // -- Spawn 2nd fission fragments -- //

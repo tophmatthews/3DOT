@@ -9,6 +9,9 @@
 #include "r250.h"
 #include "functions.h"
 #include "simconf.h"
+//#include "sample_single.h"
+
+using namespace std;
 
 enum ion_type {FF, LAT, FG};
 
