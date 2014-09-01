@@ -40,11 +40,11 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   {
     ++ic; // number of collisions for each ion in each material
     material = sample->lookupMaterial( pka->pos );
+    oldMaterial = material;
     if (simconf->fullTraj)
       cout << "in material with avg z: " << material->az << endl;
     if (material == 0)
       break;
-    //cout << pka->travel << endl;
 
     v_norm( pka->dir ); // normalize direction vector
     
@@ -52,11 +52,10 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     
-    double minls =cbrt( 1 / material->arho);
+    ls = (ls > material->minls ? ls : material->minls);
     
-    ls = (ls > minls ? ls : minls);
-    
-    //cout << "pmax: " << material->pmax << " ls: " << ls << endl;
+    if (ls > 200 && material->az == 49)
+      cout << "SOMETHING BAD" << endl;
     
     if (simconf->fullTraj)
       printf( "\nls: %f\n", ls);
@@ -94,7 +93,10 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       pka->travel += ls; // add travel length to total path length
       
       for (int i = 0; i < 3; ++i)
+      {
+        pka->posOld[i] = pka->pos[i]; // save original location
         pka->pos[i] += ls * pka->dir[i]; // update position
+      }
       
       if (simconf->fullTraj)
       {
@@ -160,6 +162,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
               {
                 printf("Failure in Trim.cc: simulation box too small. Ion wrapped around box in negative direction\n" );
                 printf("ls: %f dim: %i pos: %f w: %f\n",ls,  i, pka->pos[i], sample->w[i]);
+                printf("end pos: %f %f %f", pka->pos[0], pka->pos[1], pka->pos[2]);
+                printf("original pos: %f %f %f", pka->posOld[0], pka->posOld[1], pka->posOld[2]);
                 exit (EXIT_FAILURE);
               }
             }
@@ -176,6 +180,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
               {
                 printf("Failure in Trim.cc: simulation box is too small. Ion wrapped around box in positive direction\n" );
                 printf("ls: %f wrap: %f dim: %i pos: %f w: %f\n", ls, wrap, i, pka->pos[i], sample->w[i]);
+                printf("end pos: %f %f %f", pka->pos[0], pka->pos[1], pka->pos[2]);
+                printf("original pos: %f %f %f", pka->posOld[0], pka->posOld[1], pka->posOld[2]);
+                printf("old material az: %0.1f \t new material az: %0.1f", oldMaterial->az, material->az);
                 exit (EXIT_FAILURE);
               }
               else

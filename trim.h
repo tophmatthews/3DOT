@@ -20,8 +20,7 @@ public:
 protected:
   sampleBase *sample;
   ionBase *pka, *recoil;
-  materialBase *material;
-  materialBase *testMaterial;
+  materialBase *material, *oldMaterial;
   elementBase *element;
   queue<ionBase*> *recoil_queue_ptr;
   bool terminate;

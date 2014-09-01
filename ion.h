@@ -18,7 +18,7 @@ enum ion_type {FF, LAT, FG};
 struct ionBase {
   int z1;
   double m1, e;
-  double dir[3], pos[3], pos0[3]; // normalized velocity vector, and position, and birthed position
+  double dir[3], pos[3], pos0[3], posOld[3]; // normalized velocity vector, and position, and birthed position
   double t; // internal clock
   double travel; // pathlength
   int pass;  // # times through box

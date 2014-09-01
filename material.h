@@ -16,6 +16,7 @@ struct materialBase {
   double arho, mu, gamma;
   double a, f, epsdg;
   double fd, kd, pmax;
+  double minls; // minimum pathlength of material
 
   int tag;
   bool dirty;
