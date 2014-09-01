@@ -40,7 +40,7 @@ void materialBase::prepare()
   // rho is bulk density in g/cc: [atoms/A] = [g/cc][atoms/mol][cc/A^3] / [avg g/mol]
   arho = rho * 0.6022 / am; // atomic density of material [atoms/Ang^3]
   
-  double minls =cbrt( 1 / arho);
+  minls = cbrt( 1 / arho);
 }
 
 // make sure layers are prepare'd first!

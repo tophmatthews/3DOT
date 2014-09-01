@@ -64,6 +64,7 @@ int main(int argc, char *argv[])
   bool save_rangeFile = false;
   
 
+  //TODO: pce these all to simconf through initializaiton
   // initialize global parameter structure and read data tables from file
   simconf = new simconfType;
   simconf->run_name = argv[1];
@@ -122,13 +123,8 @@ int main(int argc, char *argv[])
   int punch[2];                  // # times (ff1/ff2) hits bubble
   int hitNum, escNum, backInNum; // # times fg atoms is hit/escapes/knocked back in
 
-//  massInverter *m = new massInverter;
-//  energyInverter *e = new energyInverter;
-//  ionBase *ff1, *ff2;
   ionBase *pka;
 
-//  double A1, A2, Etot, E1, E2; // inputs for ff creation
-//  int Z1, Z2;
 
   // File creation
   

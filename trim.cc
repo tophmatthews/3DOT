@@ -52,10 +52,17 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     
-    ls = (ls > material->minls ? ls : material->minls);
-    
     if (ls > 200 && material->az == 49)
-      cout << "SOMETHING BAD" << endl;
+    {
+      cout << "SOMETHING BAD arho: " << material->arho << endl;
+      cout << "ls: " << ls << endl;
+      cout << "pmax: " << material->pmax << endl;
+      cout << "minls: " << material->minls << endl;
+    }
+    
+    ls = (ls > material->minls ? ls : material->minls);
+
+    
     
     if (simconf->fullTraj)
       printf( "\nls: %f\n", ls);
@@ -94,7 +101,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       
       for (int i = 0; i < 3; ++i)
       {
-        pka->posOld[i] = pka->pos[i]; // save original location
         pka->pos[i] += ls * pka->dir[i]; // update position
       }
       
@@ -162,8 +168,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
               {
                 printf("Failure in Trim.cc: simulation box too small. Ion wrapped around box in negative direction\n" );
                 printf("ls: %f dim: %i pos: %f w: %f\n",ls,  i, pka->pos[i], sample->w[i]);
-                printf("end pos: %f %f %f", pka->pos[0], pka->pos[1], pka->pos[2]);
-                printf("original pos: %f %f %f", pka->posOld[0], pka->posOld[1], pka->posOld[2]);
+                printf("end pos: %f %f %f\n", pka->pos[0], pka->pos[1], pka->pos[2]);
+                printf("original pos: %f %f %f\n", pka->posOld[0], pka->posOld[1], pka->posOld[2]);
+                printf("old material az: %0.1f \t new material az: %0.1f\n", oldMaterial->az, material->az);
                 exit (EXIT_FAILURE);
               }
             }
@@ -180,9 +187,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
               {
                 printf("Failure in Trim.cc: simulation box is too small. Ion wrapped around box in positive direction\n" );
                 printf("ls: %f wrap: %f dim: %i pos: %f w: %f\n", ls, wrap, i, pka->pos[i], sample->w[i]);
-                printf("end pos: %f %f %f", pka->pos[0], pka->pos[1], pka->pos[2]);
-                printf("original pos: %f %f %f", pka->posOld[0], pka->posOld[1], pka->posOld[2]);
-                printf("old material az: %0.1f \t new material az: %0.1f", oldMaterial->az, material->az);
+                printf("end pos: %f %f %f\n", pka->pos[0], pka->pos[1], pka->pos[2]);
+                printf("original pos: %f %f %f\n", pka->posOld[0], pka->posOld[1], pka->posOld[2]);
+                printf("old material az: %0.1f \t new material az: %0.1f\n", oldMaterial->az, material->az);
                 exit (EXIT_FAILURE);
               }
               else
@@ -291,6 +298,12 @@ void trimBase::rangeFix( ionBase *pka, sampleBase *sample, bool &rangefix_flag, 
   double c = 0;
   for (int i = 0; i < 3; i++)
   {
+    if (pka->pos[i] < 0 || pka->pos[i] > simconf->length)
+    {
+      printf("in Trim.cc: ion wrapped around boundaries before intersection bubble");
+      exit (EXIT_FAILURE);
+    }
+
     double testPos = pka->pos[i] + pka->dir[i] * ls;
     a += sqr( testPos - pka->pos[i] );
     b += 2 * ( testPos - pka->pos[i] ) * ( pka->pos[i] - sample->w[i] / 2 );
