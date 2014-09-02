@@ -62,6 +62,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     ls = (ls > material->minls ? ls : material->minls);
 
+    //pull request test
     
     
     if (simconf->fullTraj)
