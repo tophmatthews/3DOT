@@ -50,6 +50,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     setPmax( pka, material );
     
+    // check changes
+    
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     
 //    if (ls > 200 && material->az == 49)
