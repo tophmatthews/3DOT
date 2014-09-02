@@ -12,13 +12,11 @@ using namespace std;
 
 
 struct sampleBase {
-  enum sampleBoundary { PBC, INF, CUT }; // periodic, infinitly large, cut off cascades
-
   vector<materialBase*> material;
   double w[3]; // simulation volume
   //double origin[3]; // box origin for plane definition
   //double corner[3]; // far corner of box for plane definitions
-  sampleBoundary bc[3]; // boundary conditions
+  boundaryCondition bc[3]; // boundary conditions
 
   virtual void averages( const ionBase *pka );
   virtual materialBase* lookupMaterial( double* pos ) = 0;
@@ -27,7 +25,7 @@ struct sampleBase {
   virtual void make_fuel( std::string, sampleBase *sample, double smear_den );
   virtual void make_fg( sampleBase *sample, double bub_den, bool xe_only );
   
-  sampleBase( double x = 10000.0, double y = 10000.0, double z = 10000.0, sampleBoundary b = PBC );
+  sampleBase( double x = 10000.0, double y = 10000.0, double z = 10000.0, boundaryCondition b = PBC );
 };
 
 #endif

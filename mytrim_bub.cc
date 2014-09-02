@@ -41,49 +41,26 @@
 
 int main(int argc, char *argv[])
 {
-  if( argc != 8 ) // check if arguments are passed
-  {
-    fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype legacy");
-    return 1;
-  }
-  
   time_t tstart, tend;
   tstart = time(0);
   
-  string buildtime(__TIME__); // time of build
-  string builddate(__DATE__);
-  
-  // Settings
+  // Basic Settings
   bool runtrim = true;
-  
-  sampleBase::sampleBoundary bounds = sampleBase::PBC;
-  
+  bool range_only = false;
+    
   bool save_fsnFile   = true;
   bool save_hitFile   = false;
   bool save_escFile   = true;
   bool save_rangeFile = false;
   
 
-  //TODO: pce these all to simconf through initializaiton
+  /////////////////////////////////
+  // ---=== Problem Setup ===--- //
+  /////////////////////////////////
+  
   // initialize global parameter structure and read data tables from file
   simconf = new simconfType;
-  simconf->run_name = argv[1];
-  simconf->bub_rad = atof( argv[2] );
-  simconf->length = atof( argv[3] );
-  simconf->fissions = atof( argv[4] );
-  simconf->fueltype = argv[5];
-  
-  if (atof(argv[6]) == 1)
-  {
-    printf( "Legacy calculation on\n");
-    simconf->pot_ff = RUTHERFORD;
-    simconf->pot_fg = HARDSPHERE;
-    simconf->pot_lat = HARDSPHERE;
-    simconf->calc_eloss = false;
-  }
-
-  simconf->bub_model = atof( argv[7] );
-
+  simconf->read_arg( argc, argv, range_only );
   printf( "==+== %s.%0.f-%0.f Started ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
   
   // seed randomnumber generator from system entropy pool
@@ -94,26 +71,22 @@ int main(int argc, char *argv[])
   r250_init( seed<0 ? -seed : seed ); // random generator goes haywire with neg. seed
 
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
-  sampleSingle *sample = new sampleSingle( simconf->length, simconf->length, simconf->length, bounds );
-
+  sampleSingle *sample = new sampleSingle( simconf->length, simconf->length, simconf->length, simconf->bounds );
   sample->make_fuel( simconf->fueltype, sample, 0.9 );
-  
-  fprintf( stderr, "%s sample built.\n", simconf->fueltype.c_str() );
+  fprintf( stderr, "%s fuel built.\n", simconf->fueltype.c_str() );
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
+  
   // initialze bubble structure.
   bubbleBase *bubble = new bubbleBase();
-  
-  //double bub_den = calc_rho(simconf->bub_rad, 132.0);
   sample->make_fg( sample, bubble->rho, false );
-
-  std::cout << "Bubble density [g/cc]: " << bubble->rho << endl;
+  fprintf( stderr, "Bubble built with density %f [g/cc].\n", bubble->rho );
   
   // create a FIFO for recoils
   queue<ionBase*> recoils;
 
-  //double norm;                   // used to determine direction
+  // initialize variables
   double pos1[3];                // initial position
   double dif[3];                 // vector from center of bubble to location
   double fromcenter[2];          // distance of (initial/final) ion location from center of bubble
@@ -125,9 +98,7 @@ int main(int argc, char *argv[])
 
   ionBase *pka;
 
-
-  // File creation
-  
+  // initialize File creation
   FILE * hitFile = NULL;
   if( save_hitFile )
   {
@@ -153,14 +124,17 @@ int main(int argc, char *argv[])
   }
   
   FILE * rangeFile = NULL;
-  if( save_rangeFile)
+  if( save_rangeFile )
   {
     char fname[200];
     snprintf( fname, 199, "output/temp/%s.%0.f-%0.f.range" , simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
     rangeFile = fopen( fname, "wt");
   }
-
-  // Start fissions
+  
+  ///////////////////////////////
+  // ---=== Problem Run ===--- //
+  ///////////////////////////////
+  printf("  --- Starting Fissions ---\n");
   for( int n = 1; n <= simconf->fissions; ++n )
   {
     // reset counters

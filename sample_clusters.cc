@@ -8,7 +8,7 @@
 #include "functions.h"
 
 //create object, inheret from sampleBase, xyz = w[3] = size of simulation
-sampleClusters::sampleClusters( double x, double y, double z , sampleBoundary b)  : sampleBase( x, y, z, b)
+sampleClusters::sampleClusters( double x, double y, double z , boundaryCondition b)  : sampleBase( x, y, z, b)
 { 
   sh = 0; // spatial hash
   cl = 0; // cluster linklist

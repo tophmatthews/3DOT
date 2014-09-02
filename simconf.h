@@ -11,7 +11,8 @@ struct scoefLine {
   double radius;
 };
 
-enum potentials {NONE, HARDSPHERE, RUTHERFORD, TRIM};
+enum potentials { NONE, HARDSPHERE, RUTHERFORD, TRIM };
+enum boundaryCondition { PBC, INF, CUT }; // periodic, infinitly large, cut off cascades
 
 struct simconfType {
   double ed, alfa, alpha, tmin, angmin, da, cw;
@@ -40,13 +41,17 @@ struct simconfType {
   bool calc_eloss;
   
   potentials pot_ff, pot_fg, pot_lat;
+  boundaryCondition bounds;
 
   // statistics of the simulation run
   int vacancies_created;
   double KP_vacancies;
   
-  simconfType( double _alfa = 0.0 );
+  void read_arg( int argc, char *argv[], bool range_only );
+  
+  simconfType();
 private:
+
   void read_scoef();
   void read_snuc();
 };

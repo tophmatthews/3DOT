@@ -42,49 +42,18 @@
 
 
 int main(int argc, char *argv[])
-// argc = num of arguments at command line, including exe name,
-// argv = pointer to supplied arguments
 {
   time_t tstart, tend;
   tstart = time(0);
   
-  string buildtime(__TIME__); // time of build
-  string builddate(__DATE__);
-  
   // Settings
-  bool calc_bub_rho = false;
   bool runtrim = true;
-  
-  
-  
-  sampleBase::sampleBoundary bounds = sampleBase::CUT;
-  
-  double rangeavg;
-  double rangemax;
-  double crowsavg;
-  double crowsmax;
-  double pathavg;
-  double pathmax;
-  
-  char fname[200];
-  if( argc !=  8 ) // check if arguments are passed
-  {
-    //fprintf( stderr, "aasyntax:\n%s basename r Cbfactor\n\nCbfactor=1 => 7e-4 bubbles/nm^3\n", argv[0] );
-    fprintf( stderr, "syntax: filename, fueltype, Z, M, E[keV], #");
-    return 1;
-  }
-  
-  //printf( "==+== %s.%s Started ==+==\n", argv[1], argv[2] );
-  
-  // Convert inputs to floats   
-  
+  bool range_only = true;
   double length = 10000000; // size of box in A.
+  
   double zin = atof( argv[3] );    // z of ion
   double min = atof( argv[4] );    // mass of ion
   double ein = atof( argv[5] );    // energy of ion in keV
-  double fissions = atof( argv[6] ); // number of ions to run
-  
-  
   
   bool mono = true;
   if( zin == 0 || min == 0 || ein == 0 )
@@ -99,32 +68,20 @@ int main(int argc, char *argv[])
   
   // initialize global parameter structure and read data tables from file
   simconf = new simconfType;
-  simconf->fueltype = argv[2];
-  simconf->makeRecoils = false;
-  simconf->BoundaryFix = false;
-  simconf->AddAndKill  = false;
+  simconf->read_arg(argc, argv, range_only);
   
-  if (atof(argv[7]) == 1)
-  {
-    printf( "Legacy calculation on\n");
-    simconf->pot_ff = RUTHERFORD;
-    simconf->pot_fg = HARDSPHERE;
-    simconf->pot_lat = HARDSPHERE;
-    simconf->calc_eloss = false;
-  }
   
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
-  sampleSingle *sample = new sampleSingle( length, length, length, bounds );
+  sampleSingle *sample = new sampleSingle( length, length, length, simconf->bounds );
+  sample->make_fuel( simconf->fueltype, sample, 1.0 );
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
   
-  sample->make_fuel( simconf->fueltype, sample, 1.0 );
-  //sample->make_fg( sample, 5, true );
-  
   // create a FIFO for recoils
   queue<ionBase*> recoils;
   
+  // Declare variables
   vector<double> range; 
   vector<double> crows;
   vector<double> path;
@@ -133,22 +90,27 @@ int main(int argc, char *argv[])
   double dif[3];  // vector from center of bubble to location
   double crow; // range by crow's flight
   int oldionId;
+  double rangeavg;
+  double rangemax;
+  double crowsavg;
+  double crowsmax;
+  double pathavg;
+  double pathmax;
   
   ionBase *ff1, *pka;
   
   double A1, Etot, E1;
   int Z1;
   
-  //snprintf( fname, 199, "output/temp/%s.%s.%.0f-%s.range" , argv[1], argv[2], zin, argv[5] );
-  //FILE *rangeFile = fopen( fname, "wt");
-  
+  // prepare names
+  char fname[200];
   snprintf( fname, 199, "output/temp/%s.%s.%.0f-%s.avgs" , argv[1], argv[2], zin, argv[5] );
   FILE *avgsFile = fopen( fname, "wt");
   
   massInverter *m = new massInverter;
   energyInverter *e = new energyInverter;
   
-  printf("Fueltype: %s\n", argv[2]);
+  printf("Fueltype: %s\n", simconf->fueltype.c_str());
   
   if (mono)
   {
@@ -160,7 +122,7 @@ int main(int argc, char *argv[])
   
   cout << "# ion, rangeavg, crowsavg, pathavg" << endl << endl;
   // Start fissions
-  for( int n = 1; n <= fissions; n++ )
+  for( int n = 1; n <= simconf->fissions; n++ )
   {
     oldionId = simconf->ionId;
     
@@ -277,7 +239,7 @@ int main(int argc, char *argv[])
   tend = time(0);
   
   printf("fueltype, z, m, ions, E [keV], Range [A], Max [A], Crows [A], Max [A]\n");
-  printf("%s %.0f \t%.2f \t%.0f \t%.3f \t%.2f \t%.2f \t%.2f \t%.2f\n", argv[2], zin, min, fissions, ein, rangeavg, rangemax, crowsavg, crowsmax);
+  printf("%s %.0f \t%.2f \t%.0f \t%.3f \t%.2f \t%.2f \t%.2f \t%.2f\n", simconf->fueltype.c_str(), zin, min, simconf->fissions, ein, rangeavg, rangemax, crowsavg, crowsmax);
   fprintf( avgsFile, " %.0f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f\n", zin, min, ein, rangeavg, rangemax, crowsavg, crowsmax);
   
   //fclose( rangeFile );
