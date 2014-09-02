@@ -52,13 +52,13 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     
-    if (ls > 200 && material->az == 49)
-    {
-      cout << "SOMETHING BAD arho: " << material->arho << endl;
-      cout << "ls: " << ls << endl;
-      cout << "pmax: " << material->pmax << endl;
-      cout << "minls: " << material->minls << endl;
-    }
+//    if (ls > 200 && material->az == 49)
+//    {
+//      cout << "SOMETHING BAD arho: " << material->arho << endl;
+//      cout << "ls: " << ls << endl;
+//      cout << "pmax: " << material->pmax << endl;
+//      cout << "minls: " << material->minls << endl;
+//    }
     
     ls = (ls > material->minls ? ls : material->minls);
 

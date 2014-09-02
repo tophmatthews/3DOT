@@ -17,6 +17,7 @@ enum ion_type {FF, LAT, FG};
 
 struct ionBase {
   int z1;
+  int ic; // Hit counter for trim engine
   double m1, e;
   double dir[3], pos[3], pos0[3], posOld[3]; // normalized velocity vector, and position, and birthed position
   double t; // internal clock

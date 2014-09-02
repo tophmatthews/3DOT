@@ -16,6 +16,8 @@ struct sampleBase {
 
   vector<materialBase*> material;
   double w[3]; // simulation volume
+  //double origin[3]; // box origin for plane definition
+  //double corner[3]; // far corner of box for plane definitions
   sampleBoundary bc[3]; // boundary conditions
 
   virtual void averages( const ionBase *pka );
