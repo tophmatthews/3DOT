@@ -156,9 +156,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       
       for( int i = 0; i < 3; ++i ) // ion location fix based on Boundary conditions
       {
-        if (sample->bc[i] == sampleBase::CUT && ( pka->pos[i] > sample->w[i] || pka->pos[i] < 0.0 ))
+        if (sample->bc[i] == CUT && ( pka->pos[i] > sample->w[i] || pka->pos[i] < 0.0 ))
           terminate = true;
-        else if (sample->bc[i] == sampleBase::PBC)
+        else if (sample->bc[i] == PBC)
         {
           bool wrapped = false;
           if (pka->pos[i] < 0) // fix for negative values

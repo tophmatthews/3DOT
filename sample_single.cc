@@ -3,7 +3,7 @@
 #include "sample_single.h"
 
 //create object, inheret from sampleBase, xyz = w[3] = size of simulation
-sampleSingle::sampleSingle( double x, double y, double z , sampleBoundary b)  : sampleBase( x, y, z, b)
+sampleSingle::sampleSingle( double x, double y, double z , boundaryCondition b)  : sampleBase( x, y, z, b)
 {
 }
 

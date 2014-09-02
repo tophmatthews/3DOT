@@ -12,7 +12,7 @@ struct sampleClusters : sampleBase {
   double *c[4]; // three arrays for cluster x,y,z,r^2 coordinates
   double cmr; // maximum cluster radius in the sample
 
-  sampleClusters( double x = 10000.0, double y = 10000.0, double z = 10000.0, sampleBoundary b = PBC );
+  sampleClusters( double x = 10000.0, double y = 10000.0, double z = 10000.0, boundaryCondition b = PBC );
 
   virtual materialBase* lookupMaterial( double* pos );
 

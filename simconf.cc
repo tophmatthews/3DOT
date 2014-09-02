@@ -7,11 +7,9 @@
 
 simconfType *simconf;
 
-simconfType::simconfType( double _alfa )
+simconfType::simconfType()
 {
   ed = 25.0; // displacement energy
-  alfa = _alfa; // angle of incidence (degrees)
-  alpha = alfa * M_PI / 180.0;
   tmin = 10.0; // Minimum transferred energy
   angmin = 10; // minimum angle
   da = 3.0; // angular grid for transmitted ions
@@ -37,15 +35,68 @@ simconfType::simconfType( double _alfa )
   pot_fg  = TRIM;
   pot_lat = TRIM;
   
+  // Declare boundary conditions
+  bounds = PBC;
   ionId = 0; // set global ion id to zero (will be incremented for each new projectile)
 
   // initialize global statistics
   vacancies_created = 0;
   KP_vacancies = 0.0;
-
+  
   // read data tables
   read_snuc();
   read_scoef();
+}
+
+void simconfType::read_arg( int argc, char *argv[], bool range_only )
+{
+  if ( !range_only )
+  {// mytrim_bub
+    if( argc != 8 ) // check if arguments are passed
+    {
+      fprintf( stderr, "syntax: filename bub_radius box_length fissions fueltype legacy bub_model");
+      exit (EXIT_FAILURE);
+    }
+    run_name = argv[1];
+    bub_rad = atof( argv[2] );
+    length = atof( argv[3] );
+    fissions = atof( argv[4] );
+    fueltype = argv[5];
+    
+    if (atof(argv[6]) == 1)
+    {
+      printf( "Legacy calculation on\n");
+      pot_ff = RUTHERFORD;
+      pot_fg = HARDSPHERE;
+      pot_lat = HARDSPHERE;
+      calc_eloss = false;
+    }
+    simconf->bub_model = atof( argv[7] );
+  }
+  else
+  {//mytrim_range
+    if ( argc != 8 )
+    {
+      fprintf( stderr, "syntax: filename, fueltype, Z, M, E[keV], #");
+      exit (EXIT_FAILURE);
+    }
+    fueltype = argv[2];
+    fissions = atof( argv[6] );
+
+    if (atof(argv[7]) == 1)
+    {
+      printf( "Legacy calculation on\n");
+      pot_ff = RUTHERFORD;
+      pot_fg = HARDSPHERE;
+      pot_lat = HARDSPHERE;
+      calc_eloss = false;
+    }
+    
+    // Other range settings
+    makeRecoils = false;
+    BoundaryFix = false;
+    AddAndKill  = false;
+  }
 }
 
 void simconfType::read_snuc()

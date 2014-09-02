@@ -4,14 +4,14 @@
 
 #include <iostream>
 
-sampleBase::sampleBase( double x, double y, double z, sampleBoundary b )
+sampleBase::sampleBase( double x, double y, double z, boundaryCondition b )
 {
   w[0] = x;
   w[1] = y;
   w[2] = z;
   
   for( int i = 0; i < 3; i++ )
-    bc[i] = b;
+    bc[i] = simconf->bounds;
 }
 
 void sampleBase::averages( const ionBase *pka )
