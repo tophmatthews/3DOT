@@ -4,6 +4,8 @@
 
 #include "trim.h"
 
+//original master code
+
 // does a single ion cascade
 void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 {
