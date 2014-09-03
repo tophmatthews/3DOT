@@ -134,7 +134,7 @@ int main(int argc, char *argv[])
   ///////////////////////////////
   // ---=== Problem Run ===--- //
   ///////////////////////////////
-  printf("  --- Starting Fissions ---\n");
+  printf("\n  --- Starting Fissions ---\n");
   for( int n = 1; n <= simconf->fissions; ++n )
   {
     // reset counters

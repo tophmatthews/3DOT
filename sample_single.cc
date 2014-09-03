@@ -11,7 +11,7 @@ sampleSingle::sampleSingle( double x, double y, double z , boundaryCondition b) 
 // dr == 0.0 means looking if we are inside the cluster
 materialBase* sampleSingle::lookupMaterial( double* pos ) 
 {
-  double R; // distance from center
+  double R = 0; // distance from center
   
   for (int i=0; i<3; ++i)
     R += sqr( ( w[i]/2 ) - pos[i] );
