@@ -24,14 +24,17 @@ protected:
   elementBase *element;
   queue<ionBase*> *recoil_queue_ptr;
   bool terminate;
-  bool edged;
 
   virtual void doELoss( ionBase *pka, materialBase *material, double ls);
-  virtual void rangeFix( ionBase *pka, sampleBase *sample, bool &rangefix_flag, double &ls );
+  virtual void moveIonToBoundary( ionBase *pka, double ls);
+  
+  virtual bool bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls );
+  virtual bool boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls );
 
   virtual void setPmax(ionBase *pka, materialBase *material);
   virtual double calcS2(ionBase *pka, materialBase *material);
   virtual void calcTestS2(ionBase *pka, materialBase *material);
+
 };
 
 #endif
