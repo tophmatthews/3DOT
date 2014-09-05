@@ -7,22 +7,20 @@
 // does a single ion cascade
 void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 {
-  // simconf should already be initialized
   pka = pka_;
   
   // make recoil queue available in overloadable functions
   recoil_queue_ptr = &recoils;
 
-  pka->ic = 0; // reset hit counter
+  pka->ic = 0;       // reset hit counter
+  terminate = false; // reset kill flag
+  
+  //--- Initialize variables ---//
   double s2, c2, ct, st; // trig identities
-  double den; // energy transfered to recoil atom
+  double den;            // energy transfered to recoil atom
   double rdir[3], perp[3], norm, psi;
-  
-  double p1, p2; // momentum before and after collision
-  
-  double r1 = dr250();
-  
-  terminate = false;
+  double p1, p2;         // momentum before and after collision
+  double r1 = dr250();   // random number
   
   if (simconf->fullTraj)
   {
@@ -39,38 +37,36 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     if (simconf->fullTraj)
       printf( "\n\tnow in material with avg z: %0.1f", material->az);
 
-    if (material == 0)
-      break;
+    if (material == 0) break;
 
     v_norm( pka->dir ); // normalize direction vector
     
+    //--- Calculate path length ls ---//
     setPmax( pka, material );
-    
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
-    
     ls = (ls > material->minls ? ls : material->minls);
     
     if (simconf->fullTraj)
       printf( "\n\tls: %f\tpos: %f %f %f\tdir: %f %f %f\n", ls,pka->pos[0], pka->pos[1], pka->pos[2], pka->dir[0], pka->dir[1], pka->dir[2]);
 
+    //--- Randomize path length if boundary just crossed or if just spawned ---//
     if ( pka->ic == 1 ) // if first recoil of atom
     {
       ls = ls * dr250();
       if (simconf->fullTraj) printf( "\tJust entered material. Adjusted ls: %f\n", ls);
     }
     
-    // --- Check if pka crosses bubble surface --- //
+    //--- Check if pka crosses bubble surface ---//
     if ( bubbleCrossFix(pka, sample, ls) ) continue; // if crosses bubble boundary, start over
     
-    // --- Check if pka crosses boundary surface --- //
+    //--- Check if pka crosses boundary surface ---//
     if ( boundsCrossFix(pka, sample, ls) ) continue; // if crosses sample boundary, go back with new ls
     
-    // --- If doesn't hit bubble or boundary, then it hits an atom --- ///
-    s2 = calcS2( pka, material );
-    
-    c2 = 1.0 - s2;
-    ct = 2.0 * c2 - 1.0;        // cos(theta_c)
-    st = sqrtf( 1.0 - ct*ct );  // sin(theta_c)
+    //--- If doesn't hit bubble or boundary, then it hits an atom ---///
+    s2 = calcS2( pka, material ); // sin^2(theta_c/2)
+    c2 = 1.0 - s2;                // cos^2(theta_c/2)
+    ct = 2.0 * c2 - 1.0;          // cos(theta_c)
+    st = sqrtf( 1.0 - ct*ct );    // sin(theta_c)
     
     // energy transferred to recoil atom
     den = element->ec * s2 * pka->e; // T=gamma*E*sin^2(theta_c/2). gamma*E = Tmax
@@ -107,7 +103,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     recoil->z1 = element->z;      // assign atomic number
     recoil->assignType();
     
-    // --- Create a random vector perpendicular to pka->dir --- //
+    //--- Create a random vector perpendicular to pka->dir ---//
     do
     {
       for (int i = 0; i < 3; ++i)
@@ -116,12 +112,13 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       norm = sqrtf( v_dot( perp, perp) );
     }
     while (norm == 0.0);
+    
     v_scale( perp, 1.0 / norm );
 
     psi = atan( st / ( ct + element->my ) ); // lab scattering angle [SRIM eq. 7.17]
     v_scale( pka->dir, cos( psi ) );
 
-    // --- Calculate new direction, subtract from old dir (stored in recoil) --- //
+    //--- Calculate new direction, subtract from old dir (stored in recoil) ---//
     for (int i = 0; i < 3; ++i)
     {
       recoil->dir[i] = pka->dir[i] * p1; // initial pka momentum vector
@@ -130,7 +127,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     }
     v_norm( recoil->dir );
     
-    // --- Put the recoil on the stack --- //
+    //--- Put the recoil on the stack ---//
     if (recoil->e > simconf->spawn_min_e && !terminate && simconf->makeRecoils)
     {
       recoil->tag = material->tag; // mark where new recoil was birthed

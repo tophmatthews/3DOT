@@ -52,7 +52,6 @@ struct ionBase {
   void reset();
   double RangeInFuel( std::string fueltype );
   virtual void prep_FF();
-  static void make_FF( std::queue<ionBase*> &recoils, int fsn_num );
   virtual void calcLs();
 };
 

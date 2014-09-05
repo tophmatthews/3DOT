@@ -25,6 +25,8 @@ struct sampleBase {
   virtual void make_fuel( std::string, sampleBase *sample, double smear_den );
   virtual void make_fg( sampleBase *sample, double bub_den, bool xe_only );
   
+  virtual void make_FF( std::queue<ionBase*> &recoils, int fsn_num );
+  
   sampleBase( double x = 10000.0, double y = 10000.0, double z = 10000.0, boundaryCondition b = PBC );
 };
 

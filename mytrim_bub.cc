@@ -43,62 +43,47 @@ int main(int argc, char *argv[])
 {
   time_t tstart, tend;
   tstart = time(0);
-  
-  // Basic Settings
-  bool runtrim = true;
-  bool range_only = false;
-    
-  bool save_fsnFile   = true;
-  bool save_hitFile   = false;
-  bool save_escFile   = true;
-  bool save_rangeFile = false;
-  
 
   /////////////////////////////////
   // ---=== Problem Setup ===--- //
   /////////////////////////////////
   
-  // initialize global parameter structure and read data tables from file
+  //--- Basic Settings ---//
+  bool runtrim = true;
+  bool range_only = false;
+  
+  bool save_fsnFile   = true;
+  bool save_hitFile   = false;
+  bool save_escFile   = true;
+  bool save_rangeFile = false;
+  
+  //--- initialize global parameter structure and read data tables from file ---//
   simconf = new simconfType;
   simconf->read_arg( argc, argv, range_only );
   printf( "==+== %s.%0.f-%0.f Started ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
   
-  // seed randomnumber generator from system entropy pool
+  //--- seed randomnumber generator from system entropy pool ---//
   FILE *urand = fopen( "/dev/random", "r" );
   int seed;
   fread( &seed, sizeof(int), 1, urand );
   fclose( urand );
   r250_init( seed<0 ? -seed : seed ); // random generator goes haywire with neg. seed
 
-  // initialize sample structure. Passed values are xyz = w[3] = size of simulation
+  //--- initialize sample structure. Passed values are xyz = w[3] = size of simulation ---//
   sampleSingle *sample = new sampleSingle( simconf->length, simconf->length, simconf->length, simconf->bounds );
   sample->make_fuel( simconf->fueltype, sample, 0.9 );
   fprintf( stderr, "%s fuel built.\n", simconf->fueltype.c_str() );
   
-  // initialize trim engine for the sample
+  //--- initialize trim engine for the sample ---//
   trimBase *trim = new trimBase( sample );
   
-  // initialze bubble structure.
+  //--- initialze bubble structure. ---//
   bubbleBase *bubble = new bubbleBase();
   sample->make_fg( sample, bubble->rho, false );
   fprintf( stderr, "Bubble built with density %f [g/cc].\n", bubble->rho );
-  
-  // create a FIFO for recoils
-  queue<ionBase*> recoils;
 
-  // initialize variables
-  double pos1[3];                // initial position
-  double dif[3];                 // vector from center of bubble to location
-  double fromcenter[2];          // distance of (initial/final) ion location from center of bubble
-  double path[2];                // path length of (ff1/ff2)
-  int oldionId;                  // save for old ion id
-  int pass[2];                   // # times (ff1/ff2) traverses length of problem
-  int punch[2];                  // # times (ff1/ff2) hits bubble
-  int hitNum, escNum, backInNum; // # times fg atoms is hit/escapes/knocked back in
 
-  ionBase *pka;
-
-  // initialize File creation
+  //--- Output file creation ---//
   FILE * hitFile = NULL;
   if( save_hitFile )
   {
@@ -131,21 +116,33 @@ int main(int argc, char *argv[])
     rangeFile = fopen( fname, "wt");
   }
   
+  //--- Create FIFO for recoils --//
+  queue<ionBase*> recoils;
+  
+  printf("Setup complete!\n");
+  
   ///////////////////////////////
-  // ---=== Problem Run ===--- //
+  // ---=== Run Problem ===--- //
   ///////////////////////////////
   printf("\n  --- Starting Fissions ---\n");
   for( int n = 1; n <= simconf->fissions; ++n )
   {
-    // reset counters
-    escNum = 0;
-    hitNum = 0;
-    backInNum = 0;
-    oldionId = simconf->ionId;
+    //--- reset counters ---//
+    int escNum = 0;    // # escapees per fission
+    int hitNum = 0;    // # bubble hits per fission
+    int backInNum = 0; // # escapees are knocked back in per fission
+    int oldionId = simconf->ionId;
     
-    ionBase *ionTrash;
-    ionTrash->make_FF( recoils, n );
-  
+    //--- initialize variables
+    ionBase *pka;
+    double dif[3] = {0};        // vector from center of bubble to location
+    double fromcenter[2] = {0}; // distance of (initial/final) ion location from center of bubble
+    double path[2] = {0};       // path length of (ff1/ff2)
+    int pass[2] = {0};          // # times (ff1/ff2) traverses length of problem
+    int punch[2] = {0};         // # times (ff1/ff2) hits bubble
+    
+    //--- Make fission fragments and run through collisions --///
+    sample->make_FF( recoils, n );
     if (runtrim == true)
     {
       pass[0] = 0;
@@ -155,21 +152,16 @@ int main(int argc, char *argv[])
         recoils.pop();           // takes off first element
         sample->averages( pka ); // pre-calculations
 
-        // -- pre-cascade ion analysis/processing -- //
+        //--- pre-cascade ion analysis/processing ---//
         
+        // Distance from center to initial location
         if ( pka->type == FG )
-        {
-          for ( int i = 0; i < 3; ++i )
-          {
-            pos1[i] = pka->pos[i];
-            dif[i] = sample->w[i] - pos1[i];
-          }
-          fromcenter[0] = sqrt( v_dot( dif, dif ) );
-        }
+          fromcenter[0] = sample->fromCenter( pka->pos );
 
+        //--- Run pka TRIM engine ---///
         trim->trim( pka, recoils );
       
-        // -- post-cascade ion analysis/processing -- //
+        //--- post-cascade ion analysis/processing ---//
         
         // hitFile info
         if( save_hitFile && pka->type == FG)
@@ -181,6 +173,7 @@ int main(int argc, char *argv[])
           fprintf( hitFile, "\n");
         }
         
+        // FF statistics
         if ( pka->type == FF ) // if ff
         {
           if ( pass[0] == 0 ) // if first ff
@@ -195,20 +188,20 @@ int main(int argc, char *argv[])
             punch[1] = pka->punch;
             path[1]  = pka->travel;
           }
-        }
+        }// end FF statistics
         
+        // FG statistics
         if (pka->type == FG)
         {
           ++hitNum;
 
-          for ( int i = 0; i < 3; ++i )
-            dif[i] = sample->w[i] - pka->pos[i];
-          fromcenter[1] = sqrt( v_dot( dif, dif ) );
+          // Distance from center to final location
+          fromcenter[1] = sample->fromCenter( pka->pos );
         
           if (pka->escapee)
           {
             ++escNum;
-            if( fromcenter[1] < simconf->bub_rad )
+            if( fromcenter[1] < simconf->bub_rad ) // If end point is actually within bubble
               ++backInNum;
             if( save_escFile )
             {
