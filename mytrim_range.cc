@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   // Settings
   bool runtrim = true;
   bool range_only = true;
-  double length = 10000000; // size of box in A.
+  double length = 100000000; // size of box in A.
   
   double zin = atof( argv[3] );    // z of ion
   double min = atof( argv[4] );    // mass of ion
@@ -73,7 +73,10 @@ int main(int argc, char *argv[])
   
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
   sampleSingle *sample = new sampleSingle( length, length, length, simconf->bounds );
-  sample->make_fuel( simconf->fueltype, sample, 1.0 );
+  sample->make_fuel( simconf->fueltype, sample, 1 );
+  
+  //cout << "making xe gas instead\n" << endl;
+  //sample->make_fg( sample, 3, 1 );
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
@@ -114,11 +117,11 @@ int main(int argc, char *argv[])
   
   if (mono)
   {
-    printf("Monoenergetic ion mode on");
-    printf("Z: %0.1f \tM: %0.1f \t E[eV]: %0.1f\n", zin, min, ein);
+    printf("Monoenergetic ion mode on\n");
+    printf("Z: %0.1f \tM: %0.1f \t E[keV]: %0.1f\n", zin, min, ein);
   }
   else
-    printf("FF ion mode on");
+    printf("FF ion mode on\n");
   
   cout << "# ion, rangeavg, crowsavg, pathavg" << endl << endl;
   // Start fissions
@@ -161,8 +164,8 @@ int main(int argc, char *argv[])
     
     // set origin
     ff1->pos[0] = 0;
-    ff1->pos[1] = length/2;
-    ff1->pos[2] = length/2;
+    ff1->pos[1] = 0;//length/2;
+    ff1->pos[2] = 0;//length/2;
     
     ff1->ionId = simconf->ionId++;
     recoils.push( ff1 );
@@ -177,6 +180,10 @@ int main(int argc, char *argv[])
         sample->averages( pka ); // pre-calculations
         for( int i=0; i<3; i++ ) pos1[i] = pka->pos[i];
         
+        pka->ef = simconf->fg_min_e;
+        
+        //cout << "manually setting potential!!!!" << endl;
+        //pka->pot = HARDSPHERE;
         trim->trim( pka, recoils );
       
         for( int i=0; i<3; i++ ) dif[i] = pos1[i] - pka->pos[i];
@@ -193,7 +200,10 @@ int main(int argc, char *argv[])
         crows.push_back(crow);
         path.push_back(pka->travel);
         
-        if( (n % 100) == 0 )
+        if (simconf->fullTraj)
+          printf("Range: %f \tcrows: %f \tpath: %f\n",pka->pos[0], crow, pka->travel);
+        
+        if( (n % 10) == 0 )
         {
           rangeavg = 0;
           for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;
@@ -238,14 +248,17 @@ int main(int argc, char *argv[])
   
   tend = time(0);
   
-  printf("fueltype, z, m, ions, E [keV], Range [A], Max [A], Crows [A], Max [A]\n");
-  printf("%s %.0f \t%.2f \t%.0f \t%.3f \t%.2f \t%.2f \t%.2f \t%.2f\n", simconf->fueltype.c_str(), zin, min, simconf->fissions, ein, rangeavg, rangemax, crowsavg, crowsmax);
+  printf("\nfuel, \tz, \tmass, \tions, \tE [keV]\n");
+  printf("%s \t\t%.0f \t%.2f \t%.0f \t%.3f \n", simconf->fueltype.c_str(), zin, min, simconf->fissions, ein);
+  printf("Range [A], \tMax [A], \tCrows [A], \tMax [A], \tPath [A], \tMax [A]\n");
+  printf("%.2f \t\t%.2f \t\t%.2f \t\t%.2f \t\t%.2f \t\t%.2f\n",rangeavg, rangemax, crowsavg, crowsmax, pathavg, pathmax);
+  printf("\n\n%f %f\n",ein*1000, rangeavg);
   fprintf( avgsFile, " %.0f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f\n", zin, min, ein, rangeavg, rangemax, crowsavg, crowsmax);
   
   //fclose( rangeFile );
   fclose( avgsFile );
   
-  cout << tend - tstart << endl;
+  cout <<"Time: " << tend - tstart << endl;
   
   //printf( "==+== %s.%s-%s Finished ==+==\n", argv[1], argv[2], argv[3] );
   

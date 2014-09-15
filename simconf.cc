@@ -29,6 +29,7 @@ simconfType::simconfType()
   BoundaryFix = true;  //
   AddAndKill  = true;  // range estimation for gas atoms that reach box boundary
   calc_eloss  = true;
+  monolayer   = false;
   
   // Declare potentials for atoms (NONE, HARDSPHERE, RUTHERFORD, TRIM)
   pot_ff  = TRIM;

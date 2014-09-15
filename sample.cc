@@ -84,8 +84,6 @@ void sampleBase::make_fg( sampleBase *sample, double bub_den, bool xe_only )
     element->m = 131.3;
     element->t = 1.0;
     material->element.push_back( element );
-    material->prepare();
-    sample->material.push_back( material );
   }
   else
   {
@@ -112,10 +110,9 @@ void sampleBase::make_fg( sampleBase *sample, double bub_den, bool xe_only )
     element->m = 132.9;
     element->t = 19.2;
     material->element.push_back( element );
-    
-    material->prepare();
-    sample->material.push_back( material );
   }
+  material->prepare();
+  sample->material.push_back( material );
 }
 
 void sampleBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )

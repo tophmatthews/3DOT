@@ -27,6 +27,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     printf( "\n+++=== ION START pos: %f %f %f ===+++\n", pka->pos[0], pka->pos[1], pka->pos[2]);
     printf( "\tion z: %i  e: %f \n", pka->z1, pka->e);
     printf( "\tdir: %f %f %f\n", pka->dir[0], pka->dir[1], pka->dir[2]);
+    printf( "\tpot: %i (0 is NONE, 1 is HARDSPHERE, 2 is RUTHERFORD, 3 is TRIM\n", pka->pot);
   }
   
   do // cycle for each collision
@@ -46,6 +47,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
     ls = (ls > material->minls ? ls : material->minls);
     
+    if (simconf->monolayer)
+      ls = material->minls;
+    
     if (simconf->fullTraj)
       printf( "\n\tls: %f\tpos: %f %f %f\tdir: %f %f %f\n", ls,pka->pos[0], pka->pos[1], pka->pos[2], pka->dir[0], pka->dir[1], pka->dir[2]);
 
@@ -56,13 +60,47 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       if (simconf->fullTraj) printf( "\tJust entered material. Adjusted ls: %f\n", ls);
     }
     
-    //--- Check if pka crosses bubble surface ---//
-    if ( bubbleCrossFix(pka, sample, ls) ) continue; // if crosses bubble boundary, start over
+    if ( simconf->bub_rad != 0 )
+    {
+      //--- Check if pka crosses bubble surface ---//
+      if ( bubbleCrossFix(pka, sample, ls) ) continue; // if crosses bubble boundary, start over
     
-    //--- Check if pka crosses boundary surface ---//
-    if ( boundsCrossFix(pka, sample, ls) ) continue; // if crosses sample boundary, go back with new ls
+      //--- Check if pka crosses boundary surface ---//
+      if ( boundsCrossFix(pka, sample, ls) ) continue; // if crosses sample boundary, start over
+    }
     
     //--- If doesn't hit bubble or boundary, then it hits an atom ---///
+    
+//    cout << "TESTING STILL" << endl;
+//    double thisp = 1.25;
+//    int thismat = 0;
+//    pka->e = 300;
+//    s2 = calcTestS2(pka, material, thisp, thismat); //nn = 0 for u, nn = 1 for c
+//    den = element->ec * s2 * pka->e;
+//    printf("%f\n", den);
+//    break;
+//
+//    pka->e = 1000;
+//    s2 = calcTestS2(pka, material, thisp, thismat); //nn = 0 for u, nn = 1 for c
+//    den = element->ec * s2 * pka->e;
+//    printf("%f\n", den);
+//    
+//    pka->e = 30000;
+//    s2 = calcTestS2(pka, material, thisp, thismat); //nn = 0 for u, nn = 1 for c
+//    den = element->ec * s2 * pka->e;
+//    printf("%f\n", den);
+//
+//    printf("pka->e: %f\n",pka->e);
+//    
+//    for(double i=0.1;i<=2.5;i+=0.05)
+//    {
+//      s2 = calcTestS2(pka, material, i, 0); //nn = 0 for u, nn = 1 for c
+//      printf("%f %f\n", i, s2);
+//    }
+//    
+//    break;
+    
+    
     s2 = calcS2( pka, material ); // sin^2(theta_c/2)
     c2 = 1.0 - s2;                // cos^2(theta_c/2)
     ct = 2.0 * c2 - 1.0;          // cos(theta_c)
@@ -142,7 +180,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       {
         double asdf[3];
         for (int i=0; i<3; ++i)
-          asdf[i] = sample->w[i] / 2 - pka->pos[i];
+          asdf[i] = sample->w[i] / 2.0 - pka->pos[i];
         double RRR = sqrt( v_dot( asdf, asdf ));
         printf( "SPAWN fromcenter: %f pka->z: %d pka->e: %f recoil->z: %d recoil->e:%f\n", RRR, pka->z1, pka->e, recoil->z1, recoil->e );
       }
@@ -194,7 +232,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
   {
     double testPos = pka->pos[i] + pka->dir[i] * ls;
     a += sqr( testPos - pka->pos[i] );
-    b += 2 * ( testPos - pka->pos[i] ) * ( pka->pos[i] - sample->w[i] / 2 );
+    b += 2.0 * ( testPos - pka->pos[i] ) * ( pka->pos[i] - sample->w[i] / 2.0 );
     c += sqr( sample->w[i]/2 ) + sqr( pka->pos[i] ) - sample->w[i] * pka->pos[i];
   }
   c -= sqr( simconf->bub_rad );
@@ -204,8 +242,8 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
   double u[2];
   if (d > 0)
   {
-    u[0] = (- b - sqrtf( d )) / (2 * a);
-    u[1] = (- b + sqrtf( d )) / (2 * a);
+    u[0] = (- b - sqrtf( d )) / (2.0 * a);
+    u[1] = (- b + sqrtf( d )) / (2.0 * a);
     if (u[0] >= 0 && u[0] <= 1)
     {
       crossed = true;
@@ -295,7 +333,7 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     {
       if ( crossed_dir[i] != 0 )
       {
-        double p_0 = ( sample->w[i] + crossed_dir[i] * sample->w[i] )/2;
+        double p_0 = ( sample->w[i] + crossed_dir[i] * sample->w[i] )/2.0;
         d[i] = ( p_0 - pka->pos[i] ) / pka->dir[i];
         if ( boundsCrossFix_test ) cout << "i: " << i << " d[i]: " << d[i] << endl;
         ls = ( ls < d[i] ? ls : d[i] );
@@ -365,10 +403,10 @@ void trimBase::setPmax(ionBase *pka, materialBase *material)
     case RUTHERFORD:
     {
       double b_0 = material->a / material->f / pka->e; // reduced energy, epsilon
-      double pmax_from_eng = b_0 / 2 * sqrt( material->gamma * pka->e / simconf->tmin - 1 );
+      double pmax_from_eng = b_0 / 2.0 * sqrt( material->gamma * pka->e / simconf->tmin - 1.0 );
       
-      double sin2_min = sqr( sin( simconf->angmin * M_PI / 180) );
-      double pmax_from_ang = b_0 / 2 * sqrt( 1 / sin2_min - 1);
+      double sin2_min = sqr( sin( simconf->angmin * M_PI / 180.0) );
+      double pmax_from_ang = b_0 / 2.0 * sqrt( 1.0 / sin2_min - 1.0);
       
       material->pmax = (pmax_from_eng > pmax_from_ang) ? pmax_from_eng : pmax_from_ang ;
       break;
@@ -380,7 +418,7 @@ void trimBase::setPmax(ionBase *pka, materialBase *material)
     }
     case NONE:
     {
-      material->pmax = 100; // arbitrary
+      material->pmax = 100.0; // arbitrary
       break;
     }
   }
@@ -394,6 +432,8 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
   double hh = dr250();
   
   // choose impact parameter: pmax set in trimBase::calcLs.
+  if (simconf->monolayer)
+    material->pmax = 2.17;
   double p = material->pmax * sqrtf( r2 ); // random p, weighted towards pmax
   
   // determine which atom in the material will be hit
@@ -419,9 +459,9 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
     {
       double R = simconf->scoef[pka->z1-1].radius + simconf->scoef[element->z-1].radius;
       if ( p > R)
-        s2 = 0;
+        s2 = 0.0;
       else
-        s2 = 1 - sqr( p / R );
+        s2 = 1.0 - sqr( p / R );
       break;
     }
     case RUTHERFORD:
@@ -502,17 +542,16 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
 
 // ==================================================================================== //
 
-void trimBase::calcTestS2(ionBase *pka, materialBase *material)
+double trimBase::calcTestS2(ionBase *pka, materialBase *material, double p, int nn)
 {
   double r2 = dr250();
   double hh = dr250();
   
   // choose impact parameter: pmax set in trimBase::calcLs.
   //double p = material->pmax * sqrtf( r2 ); // random p, weighted towards pmax
-  double p = 1.25;
 
   // determine which atom in the material will be hit
-  int nn;
+  //int nn;
 //  for (nn = 0; nn < material->element.size(); nn++)
 //  {
 //    hh -= material->element[nn]->t; // hh is random number
@@ -520,15 +559,15 @@ void trimBase::calcTestS2(ionBase *pka, materialBase *material)
 //      break;
 //  }
   
-  nn = 0;
+  //nn = ;
   element = material->element[nn];
-  cout << element->z << endl;
+  //cout << element->z << endl;
   
   double eps = element->fi * pka->e; // epsilon of given element
   double b = p / element->ai;        // reduced impact parameter
   
   double s2;
-  cout << pka->pot << endl;
+  //cout << pka->pot << endl;
   switch (pka->pot)
   {
     case NONE:
@@ -617,7 +656,11 @@ void trimBase::calcTestS2(ionBase *pka, materialBase *material)
       break;
     }
   }
-  cout << p << ", " << pka->e << ", " << s2 << endl;
+  //cout << p << ", " << pka->e << ", " << s2 << endl;
+  
+  
+  
+  return s2;
 }
 
 // ==================================================================================== //

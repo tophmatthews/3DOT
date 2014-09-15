@@ -107,7 +107,7 @@ double ionBase::RangeInFuel( std::string fueltype )
   {
     if( z1 == 54 ) // if xenon
     {
-      c[0]=-0.00462; c[1]=0.08158; c[2]=-0.4515; c[3]=1.47142; c[4]=-0.96243;
+      c[0]=-0.00567; c[1]=0.10018; c[2]=-0.55072; c[3]=1.57743; c[4]=-0.74034;
     }
     else if( z1 == 55 ) // if cesium
     {
