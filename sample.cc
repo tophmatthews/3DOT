@@ -159,7 +159,7 @@ void sampleBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
     for( int i = 0; i < 3; ++i )
     {
       ff1->pos[i] = dr250() * simconf->length;
-      R += sqr( simconf->length/2 - ff1->pos[i] );
+      R += sqr( simconf->length/2.0 - ff1->pos[i] );
     }
     R = sqrt(R);
   } while (R < simconf->bub_rad);

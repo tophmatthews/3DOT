@@ -40,7 +40,7 @@ inline void r250_init( int s ) { srand(s); }
 // Calculate atom density in bubble
 inline double calc_rho( double r, double m )
 {
-  double R = r / 1e10; // convert r from A to m units
+  double R = r / 1.0e10; // convert r from A to m units
   double B = 8.5E-29; // m^3/atom
   double k = 1.38E-23; // J/K: boltzmann's constant
   double T = 1000; // K : temperature
@@ -49,7 +49,7 @@ inline double calc_rho( double r, double m )
   double arho; // atomic density
   double rho; // mass density
   
-  arho = 1 / ( B + 1 / ( ( 2*gamma/k/T )/R + sigma / k / T ) ); // atoms/m3
+  arho = 1.0 / ( B + 1.0 / ( ( 2.0*gamma/k/T )/R + sigma / k / T ) ); // atoms/m3
   rho = arho / 6.022e23 * m / 1e6; // g/cc
   //std::cout << "rho: " << rho << " arho: " << arho << endl;
   
@@ -60,7 +60,7 @@ inline bool inbubble( double bub_cen[3], double pos[3], double r )
 {
   double a;
   for( int i = 0; i < 3; i++ )
-    a += sqr(bub_cen[i]/2 - pos[i]);
+    a += sqr(bub_cen[i]/2.0 - pos[i]);
   a = sqrtf(a);
   if( a < r ) return true;
   else return false;

@@ -72,12 +72,12 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     //--- If doesn't hit bubble or boundary, then it hits an atom ---///
     
 //    cout << "TESTING STILL" << endl;
-//    double thisp = 1.25;
+//    double thisp = 1.1;
 //    int thismat = 0;
-//    pka->e = 300;
+//    pka->e = 1000;
 //    s2 = calcTestS2(pka, material, thisp, thismat); //nn = 0 for u, nn = 1 for c
 //    den = element->ec * s2 * pka->e;
-//    printf("%f\n", den);
+//    printf("%f\n", s2);
 //    break;
 //
 //    pka->e = 1000;
@@ -233,11 +233,11 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     double testPos = pka->pos[i] + pka->dir[i] * ls;
     a += sqr( testPos - pka->pos[i] );
     b += 2.0 * ( testPos - pka->pos[i] ) * ( pka->pos[i] - sample->w[i] / 2.0 );
-    c += sqr( sample->w[i]/2 ) + sqr( pka->pos[i] ) - sample->w[i] * pka->pos[i];
+    c += sqr( sample->w[i]/2.0 ) + sqr( pka->pos[i] ) - sample->w[i] * pka->pos[i];
   }
   c -= sqr( simconf->bub_rad );
   
-  double d = b*b - 4 * a * c;
+  double d = b*b - 4.0 * a * c;
   
   double u[2];
   if (d > 0)

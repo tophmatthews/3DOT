@@ -71,7 +71,7 @@ int main(int argc, char *argv[])
 
   //--- initialize sample structure. Passed values are xyz = w[3] = size of simulation ---//
   sampleSingle *sample = new sampleSingle( simconf->length, simconf->length, simconf->length, simconf->bounds );
-  sample->make_fuel( simconf->fueltype, sample, 0.9 );
+  sample->make_fuel( simconf->fueltype, sample, 1.0 );
   fprintf( stderr, "%s fuel built.\n", simconf->fueltype.c_str() );
   
   //--- initialize trim engine for the sample ---//

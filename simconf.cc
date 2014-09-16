@@ -14,15 +14,15 @@ simconfType::simconfType()
   angmin = 10; // minimum angle
   da = 3.0; // angular grid for transmitted ions
   cw = 0.001; // channel width 1% of layer thickness
-  mdmin = 10; // [eV] lower energy limit for ion tracking
-  mdmax = 12000; // [eV] upper energy limit for ion tracking
+  mdmin = 10.0; // [eV] lower energy limit for ion tracking
+  mdmax = 12000.0; // [eV] upper energy limit for ion tracking
   latp = 2.5; // [Ang] lattice parameter
   
-  bub_rad = 0; // initiallization of bubble radius
+  bub_rad = 0.0; // initiallization of bubble radius
   
-  spawn_min_e = 300;
-  fg_min_e = 5;
-  ion_min_e = 300;
+  spawn_min_e = 300.0;
+  fg_min_e = 5.0;
+  ion_min_e = 300.0;
   
   fullTraj    = false; // output full trajectories
   makeRecoils = true;  // make recoils

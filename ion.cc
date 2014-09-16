@@ -28,11 +28,11 @@ ionBase::ionBase( int _z1, double _m1, double _e ) : z1(_z1), m1(_m1), e(_e)
 
 void ionBase::reset()
 {
-  pass = 0;
-  punch = 0;
+  pass = 0.0;
+  punch = 0.0;
   escapee = false;
-  Ehit = 0;
-  Eout = 0;
+  Ehit = 0.0;
+  Eout = 0.0;
   travel = 0.0;
   
   if ( type == FG)
@@ -160,7 +160,7 @@ double ionBase::RangeInFuel( std::string fueltype )
 
 void ionBase::prep_FF()
 {
-  gen = 0;
+  gen = 0.0;
   fam_fuel = 0;
   fam_fg = 0;
   tag = -1; // -1 = born in fuel

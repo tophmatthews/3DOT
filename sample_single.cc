@@ -14,7 +14,7 @@ materialBase* sampleSingle::lookupMaterial( double* pos )
   double R = 0; // distance from center
   
   for (int i=0; i<3; ++i)
-    R += sqr( ( w[i]/2 ) - pos[i] );
+    R += sqr( ( w[i]/2.0 ) - pos[i] );
   R = sqrt(R);
   
   if ( R < simconf->bub_rad )
@@ -28,7 +28,7 @@ double sampleSingle::fromCenter( double *pos )
   double R = 0; // distance from center
   
   for (int i=0; i<3; ++i)
-    R += sqr( ( w[i]/2 ) - pos[i] );
+    R += sqr( ( w[i]/2.0 ) - pos[i] );
   R = sqrt(R);
   return R;
 }

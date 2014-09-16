@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
   // Settings
   bool runtrim = true;
   bool range_only = true;
-  double length = 100000000; // size of box in A.
+  double length = 100000000.0; // size of box in A.
   
   double zin = atof( argv[3] );    // z of ion
   double min = atof( argv[4] );    // mass of ion
@@ -73,10 +73,10 @@ int main(int argc, char *argv[])
   
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
   sampleSingle *sample = new sampleSingle( length, length, length, simconf->bounds );
-  sample->make_fuel( simconf->fueltype, sample, 1 );
+  //sample->make_fuel( simconf->fueltype, sample, 1 );
   
-  //cout << "making xe gas instead\n" << endl;
-  //sample->make_fg( sample, 3, 1 );
+  cout << "making xe gas instead\n" << endl;
+  sample->make_fg( sample, 3, 1 );
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
@@ -137,7 +137,7 @@ int main(int argc, char *argv[])
       // Assign FF data
       ff1->z1 = zin;
       ff1->m1 = min;
-      ff1->e  = ein * 1e3; // e
+      ff1->e  = ein * 1.0e3; // e
     }
     else
     {
@@ -157,15 +157,15 @@ int main(int argc, char *argv[])
 
     }
     // set direction
-    ff1->dir[0] = 1;
-    ff1->dir[1] = 0;
-    ff1->dir[2] = 0;
+    ff1->dir[0] = 1.0;
+    ff1->dir[1] = 0.0;
+    ff1->dir[2] = 0.0;
     v_norm( ff1->dir );
     
     // set origin
-    ff1->pos[0] = 0;
-    ff1->pos[1] = 0;//length/2;
-    ff1->pos[2] = 0;//length/2;
+    ff1->pos[0] = 0.0;
+    ff1->pos[1] = 0.0;//length/2;
+    ff1->pos[2] = 0.0;//length/2;
     
     ff1->ionId = simconf->ionId++;
     recoils.push( ff1 );
@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
   printf("%s \t\t%.0f \t%.2f \t%.0f \t%.3f \n", simconf->fueltype.c_str(), zin, min, simconf->fissions, ein);
   printf("Range [A], \tMax [A], \tCrows [A], \tMax [A], \tPath [A], \tMax [A]\n");
   printf("%.2f \t\t%.2f \t\t%.2f \t\t%.2f \t\t%.2f \t\t%.2f\n",rangeavg, rangemax, crowsavg, crowsmax, pathavg, pathmax);
-  printf("\n\n%f %f\n",ein*1000, rangeavg);
+  printf("\n\n%f %f\n",ein*1000.0, rangeavg);
   fprintf( avgsFile, " %.0f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f \t%.2f\n", zin, min, ein, rangeavg, rangemax, crowsavg, crowsmax);
   
   //fclose( rangeFile );

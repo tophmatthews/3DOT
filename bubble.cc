@@ -29,7 +29,7 @@ void bubbleBase::calcArho( )
   {
     case VDW:
     {
-      arho = 1 / ( B + 1 / ( ( 2*gamma/k/_temp )/R + sigma / k / _temp ) ); // atoms/m3
+      arho = 1 / ( B + 1 / ( ( 2.0*gamma/k/_temp )/R + sigma / k / _temp ) ); // atoms/m3
       break;
     }
     case RONCHI:
@@ -53,8 +53,8 @@ void bubbleBase::calcArho( )
       break;
     }
   }
-  rho = arho / 6.022e23 * m / 1e6; // g/cc
-  arho /= 1e30; // [atom/ang]
+  rho = arho / 6.022e23 * m / 1.0e6; // g/cc
+  arho /= 1.0e30; // [atom/ang]
 
   //std::cout << "rho: " << rho << " arho: " << arho << endl;
 }

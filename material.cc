@@ -80,7 +80,7 @@ void materialBase::average( const ionBase *pka )
     element[i]->ec = 4.0 * element[i]->my / sqr( 1.0 + element[i]->my); //gamma
     
     // universal stopping distance
-    element[i]->ai = a0 * .8854 / ( pow( double(pka->z1), 0.23 ) + pow( element[i]->z, 0.23 ) );
+    element[i]->ai = a0 * 0.8854 / ( pow( double(pka->z1), 0.23 ) + pow( element[i]->z, 0.23 ) );
     
     // f = eps/E (new TRIM eq 7-5)
     element[i]->fi = element[i]->ai * element[i]->m / 
