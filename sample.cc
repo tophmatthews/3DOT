@@ -62,6 +62,20 @@ void sampleBase::make_fuel( std::string fueltype, sampleBase *sample, double fra
     element->t = 1.0;
     material->element.push_back( element );
   }
+  else if( fueltype == "uo2" ) // uranium nitride
+  {
+    material = new materialBase( 10.97 * frac_den ); // density in [g/cc]
+    element = new elementBase;
+    element->z = 92;
+    element->m = 238.0;
+    element->t = 1.0;
+    material->element.push_back( element );
+    element = new elementBase;
+    element->z = 8;
+    element->m = 16.0;
+    element->t = 2.0;
+    material->element.push_back( element );
+  }
   else
   {
     fprintf( stderr, "Invalid fuel type specified");

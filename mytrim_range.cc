@@ -73,10 +73,10 @@ int main(int argc, char *argv[])
   
   // initialize sample structure. Passed values are xyz = w[3] = size of simulation
   sampleSingle *sample = new sampleSingle( length, length, length, simconf->bounds );
-  //sample->make_fuel( simconf->fueltype, sample, 1 );
+  sample->make_fuel( simconf->fueltype, sample, 1 );
   
-  cout << "making xe gas instead\n" << endl;
-  sample->make_fg( sample, 3, 1 );
+  //cout << "making xe gas instead\n" << endl;
+  //sample->make_fg( sample, 3, 1 );
   
   // initialize trim engine for the sample
   trimBase *trim = new trimBase( sample );
@@ -203,13 +203,13 @@ int main(int argc, char *argv[])
         if (simconf->fullTraj)
           printf("Range: %f \tcrows: %f \tpath: %f\n",pka->pos[0], crow, pka->travel);
         
-        if( (n % 10) == 0 )
+        if( (n % 1000) == 0 )
         {
           rangeavg = 0;
           for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;
           rangeavg /= range.size();
           rangemax = *max_element(range.begin(), range.end());
-          
+
           crowsavg = 0;
           for(std::vector<double>::iterator j=crows.begin();j!=crows.end();++j) crowsavg += *j;
           crowsavg /= crows.size();
@@ -235,7 +235,7 @@ int main(int argc, char *argv[])
   for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;
   rangeavg /= range.size();
   rangemax = *max_element(range.begin(), range.end());
-  
+
   crowsavg = 0;
   for(std::vector<double>::iterator j=crows.begin();j!=crows.end();++j) crowsavg += *j;
   crowsavg /= crows.size();

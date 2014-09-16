@@ -56,5 +56,5 @@ void bubbleBase::calcArho( )
   rho = arho / 6.022e23 * m / 1.0e6; // g/cc
   arho /= 1.0e30; // [atom/ang]
 
-  //std::cout << "rho: " << rho << " arho: " << arho << endl;
+  std::cout << "rho: " << rho << " arho: " << arho << endl;
 }

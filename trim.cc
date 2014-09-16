@@ -21,6 +21,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   double rdir[3], perp[3], norm, psi;
   double p1, p2;         // momentum before and after collision
   double r1 = dr250();   // random number
+  double oldls = 0.0;
+  double newls = 0.0;
   
   if (simconf->fullTraj)
   {
@@ -50,14 +52,28 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     if (simconf->monolayer)
       ls = material->minls;
     
+
+    
     if (simconf->fullTraj)
       printf( "\n\tls: %f\tpos: %f %f %f\tdir: %f %f %f\n", ls,pka->pos[0], pka->pos[1], pka->pos[2], pka->dir[0], pka->dir[1], pka->dir[2]);
 
     //--- Randomize path length if boundary just crossed or if just spawned ---//
-    if ( pka->ic == 1 ) // if first recoil of atom
+    
+    if ( newls!=0 )
+    {
+      ls = newls;
+      if (simconf->fullTraj) printf( "\t Continuined from previous oldls: %f newls: %f\n", oldls, newls);
+    }
+    else if ( pka->ic == 1 ) // if first recoil of atom
     {
       ls = ls * dr250();
       if (simconf->fullTraj) printf( "\tJust entered material. Adjusted ls: %f\n", ls);
+    }
+    
+    if (ls < 0)
+    {
+      printf("Trim.cc: negative travel distance\n");
+      exit (EXIT_FAILURE);
     }
     
     if ( simconf->bub_rad != 0 )
@@ -65,8 +81,15 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       //--- Check if pka crosses bubble surface ---//
       if ( bubbleCrossFix(pka, sample, ls) ) continue; // if crosses bubble boundary, start over
     
+      oldls = ls;
       //--- Check if pka crosses boundary surface ---//
-      if ( boundsCrossFix(pka, sample, ls) ) continue; // if crosses sample boundary, start over
+      if ( boundsCrossFix(pka, sample, ls) )
+      {
+        newls = oldls - ls;
+        continue; // if crosses sample boundary, start over
+      }
+      else
+        newls = 0;
     }
     
     //--- If doesn't hit bubble or boundary, then it hits an atom ---///
