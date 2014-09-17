@@ -91,8 +91,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         newls = 0;
     }
     
-    //--- If doesn't hit bubble or boundary, then it hits an atom ---///
-    
+//--- TESTING BLOCK ---//
 //    cout << "TESTING STILL" << endl;
 //    double thisp = 1.1;
 //    int thismat = 0;
@@ -121,8 +120,10 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 //    }
 //    
 //    break;
+//--- TESTING BLOCK ---//
     
     
+//--- If doesn't hit bubble or boundary, then it hits an atom ---///
     s2 = calcS2( pka, material ); // sin^2(theta_c/2)
     c2 = 1.0 - s2;                // cos^2(theta_c/2)
     ct = 2.0 * c2 - 1.0;          // cos(theta_c)
@@ -231,7 +232,7 @@ void trimBase::doELoss( ionBase *pka, materialBase *material, double ls)
 void trimBase::moveIonToBoundary( ionBase *pka, double ls )
 {
   pka->ic = 0; // reset collision count
-  ls += 0.1;   // add a bit to ensure pka travels across boundary
+  ls += 0.0001;   // add a bit to ensure pka travels across boundary
   
   if (simconf->calc_eloss) doELoss( pka, material, ls );
   
