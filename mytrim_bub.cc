@@ -121,6 +121,8 @@ int main(int argc, char *argv[])
   
   printf("Setup complete!\n");
   
+  cout << simconf->length/2 << endl;
+  
   ///////////////////////////////
   // ---=== Run Problem ===--- //
   ///////////////////////////////

@@ -47,12 +47,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     //--- Calculate path length ls ---//
     setPmax( pka, material );
     double ls = 1.0 / ( M_PI * sqr( material->pmax ) * material->arho ); // (newtrim eq 7-28); // calculate path length
-    ls = (ls > material->minls ? ls : material->minls);
     
     if (simconf->monolayer)
       ls = material->minls;
-    
-
     
     if (simconf->fullTraj)
       printf( "\n\tls: %f\tpos: %f %f %f\tdir: %f %f %f\n", ls,pka->pos[0], pka->pos[1], pka->pos[2], pka->dir[0], pka->dir[1], pka->dir[2]);
@@ -69,6 +66,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       ls = ls * dr250();
       if (simconf->fullTraj) printf( "\tJust entered material. Adjusted ls: %f\n", ls);
     }
+    
+    ls = (ls > material->minls ? ls : material->minls);
     
     if (ls < 0)
     {
