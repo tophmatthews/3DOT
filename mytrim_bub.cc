@@ -120,9 +120,7 @@ int main(int argc, char *argv[])
   queue<ionBase*> recoils;
   
   printf("Setup complete!\n");
-  
-  cout << simconf->length/2 << endl;
-  
+    
   ///////////////////////////////
   // ---=== Run Problem ===--- //
   ///////////////////////////////

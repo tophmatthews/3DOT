@@ -12,7 +12,7 @@ void materialBase::prepare()
   double tt = 0.0;
 
   // get total stoichiometry
-  for( int i = 0; i < element.size(); i++ ) 
+  for( int i = 0; i < element.size(); i++ )
   {
     if( element[i]->t < 0.0 )
       element[i]->t = 0.0;
