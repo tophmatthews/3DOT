@@ -322,7 +322,6 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
       fprintf( stderr, "\n Crossed boundary but didn't register new material\n" );
       fprintf( stderr, "pos: %f %f %f e: %f\n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e);
       fprintf( stderr, "direction: %i\n", in_or_out);
-      exit (EXIT_FAILURE);
     }
     
     if (pka->type == FG)
