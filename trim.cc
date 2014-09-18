@@ -73,8 +73,8 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     ls = (ls > material->minls ? ls : material->minls);
     
-    if ( pka->ic == 1)
-      ls -= 1.0; //subtract extra that was used to push it across before
+//    if ( pka->ic == 1)
+//      ls -= 1.0; //subtract extra that was used to push it across before
     
     //printf("ls: %f material: %f\n", ls, material->az);
     
@@ -250,7 +250,6 @@ void trimBase::moveIonToBoundary( ionBase *pka, double ls )
   
   if (simconf->calc_eloss) doELoss( pka, material, ls );
   
-  ls += 1.0;   // add a bit to ensure pka travels across boundary
   pka->travel += ls; // add travel length to total path length
   
   for (int i = 0; i < 3; ++i)
@@ -263,6 +262,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
 {
   // ---=== Check if Crossed first, and fix ls if true ===--- //
   bool crossed = false;
+  int in_or_out;
   double a = 0;
   double b = 0;
   double c = 0;
@@ -286,11 +286,13 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     {
       crossed = true;
       ls *=u[0];
+      in_or_out = -1;
     }
     else if (u[1] >=0 && u[1] <=1)
     {
       crossed = true;
       ls *=u[1];
+      in_or_out = 1;
     }
 
     //if (simconf->fullTraj) printf("u1: %f u2:%f\n", u[0], u[1]);
@@ -305,6 +307,14 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     
     moveIonToBoundary ( pka, ls );
     
+    double bub_norm[3];
+    for (int i = 0; i < 3; ++i)
+      bub_norm[i] = pka->pos[i] - simconf->length/2.0; // update position
+    v_norm(bub_norm);
+
+    for (int i = 0; i < 3; ++i)
+      pka->pos[i] += in_or_out * 0.001 * bub_norm[i]; // update position
+    
     materialBase *newmat;
     newmat = sample->lookupMaterial( pka->pos );
     if (newmat->az == material->az || newmat->am == material->am)
@@ -316,9 +326,11 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     
     if (pka->type == FG)
     {
-      pka->escapee = true;
-      if (pka->Eout == 0)
-        pka->Eout = pka->e; // set transition energy. + is leaving, - is entering
+      if ( !pka->escapee )
+      {
+        pka->escapee = true;
+        pka->Eout = pka->e; // set transition energy
+      }
     }
     
     if (simconf->fullTraj)
@@ -377,6 +389,7 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     if ( boundsCrossFix_test )
       cout << "hey crossed! " << crossed_dir[0] << " " << crossed_dir[1] << " " << crossed_dir[2] << endl;
     double d[3] = { ls }; //initially set all distances to path length. can only get smaller from here
+    int whichone = -1;
     for ( int i=0; i<3; ++i )
     {
       if ( crossed_dir[i] != 0 )
@@ -385,11 +398,21 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
         d[i] = ( p_0 - pka->pos[i] ) / pka->dir[i];
         if ( boundsCrossFix_test ) cout << "i: " << i << " d[i]: " << d[i] << endl;
         ls = ( ls < d[i] ? ls : d[i] );
+        whichone = ( ls < d[i] ? whichone : i );
       }
     }
-  
+    if (boundsCrossFix_test)
+      printf("the fix is for the %i direction. pos: %f %f %f", whichone, pka->pos[0], pka->pos[1], pka->pos[2]);
+    if ( whichone < 0)
+    {
+      printf("Trim.cc: something is wrong with int whichone");
+      exit (EXIT_FAILURE);
+    }
+    
     // --- Move ion to plane of first intersection --- //
     moveIonToBoundary ( pka, ls );
+    
+    pka->pos[whichone] += 0.001 * pka->dir[whichone]; // update position
     
     ++pka->pass;
     
