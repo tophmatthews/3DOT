@@ -74,7 +74,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     ls = (ls > material->minls ? ls : material->minls);
     
     if ( pka->ic == 1)
-      ls -= 0.1; //subtract extra that was used to push it across before
+      ls -= 1.0; //subtract extra that was used to push it across before
     
     //printf("ls: %f material: %f\n", ls, material->az);
     
@@ -250,7 +250,7 @@ void trimBase::moveIonToBoundary( ionBase *pka, double ls )
   
   if (simconf->calc_eloss) doELoss( pka, material, ls );
   
-  ls += 0.1;   // add a bit to ensure pka travels across boundary
+  ls += 1.0;   // add a bit to ensure pka travels across boundary
   pka->travel += ls; // add travel length to total path length
   
   for (int i = 0; i < 3; ++i)
