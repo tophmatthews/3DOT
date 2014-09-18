@@ -313,7 +313,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     v_norm(bub_norm);
 
     for (int i = 0; i < 3; ++i)
-      pka->pos[i] += in_or_out * 0.001 * bub_norm[i]; // update position
+      pka->pos[i] += in_or_out * 0.1 * bub_norm[i]; // update position
     
     materialBase *newmat;
     newmat = sample->lookupMaterial( pka->pos );
@@ -321,6 +321,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     {
       fprintf( stderr, "\n Crossed boundary but didn't register new material\n" );
       fprintf( stderr, "pos: %f %f %f e: %f\n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e);
+      fprintf( stderr, "direction: %i\n", in_or_out);
       exit (EXIT_FAILURE);
     }
     
@@ -412,7 +413,7 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     // --- Move ion to plane of first intersection --- //
     moveIonToBoundary ( pka, ls );
     
-    pka->pos[whichone] += 0.001 * pka->dir[whichone]; // update position
+    pka->pos[whichone] += 0.1 * pka->dir[whichone]; // update position
     
     ++pka->pass;
     
