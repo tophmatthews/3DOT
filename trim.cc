@@ -262,7 +262,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
 {
   // ---=== Check if Crossed first, and fix ls if true ===--- //
   bool crossed = false;
-  int in_or_out;
+  double in_or_out = 0;;
   double a = 0;
   double b = 0;
   double c = 0;
@@ -277,25 +277,23 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
   
   double d = b*b - 4.0 * a * c;
   
-  double u[2];
   if (d > 0)
   {
+    double u[2];
     u[0] = (- b - sqrtf( d )) / (2.0 * a);
     u[1] = (- b + sqrtf( d )) / (2.0 * a);
     if (u[0] >= 0 && u[0] <= 1)
     {
       crossed = true;
-      ls *=u[0];
+      ls *= u[0];
       in_or_out = -1;
     }
     else if (u[1] >=0 && u[1] <=1)
     {
       crossed = true;
-      ls *=u[1];
+      ls *= u[1];
       in_or_out = 1;
     }
-
-    //if (simconf->fullTraj) printf("u1: %f u2:%f\n", u[0], u[1]);
   }
   
   // ---=== If crossed then apply fixed ls ===--- //
@@ -307,13 +305,17 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     
     moveIonToBoundary ( pka, ls );
     
+    if ( pka->e < 0 )
+      cout << "broken from cross" << endl;
+    
     double bub_norm[3];
     for (int i = 0; i < 3; ++i)
       bub_norm[i] = pka->pos[i] - simconf->length/2.0; // update position
     v_norm(bub_norm);
+    
 
     for (int i = 0; i < 3; ++i)
-      pka->pos[i] += in_or_out * 0.1 * bub_norm[i]; // update position
+      pka->pos[i] += in_or_out * simconf->bit * bub_norm[i]; // update position
     
     materialBase *newmat;
     newmat = sample->lookupMaterial( pka->pos );
@@ -321,10 +323,12 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     {
       fprintf( stderr, "\n Crossed boundary but didn't register new material\n" );
       fprintf( stderr, "pos: %f %f %f e: %f\n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e);
-      fprintf( stderr, "direction: %i\n", in_or_out);
+      fprintf( stderr, "dir: %f %f %f\n", pka->dir[0], pka->dir[1], pka->dir[2]);
+      fprintf( stderr, "direction: %f\n", in_or_out);
+      exit (EXIT_FAILURE);
     }
     
-    if (pka->type == FG)
+    if ( pka->type == FG )
     {
       if ( !pka->escapee )
       {
@@ -333,7 +337,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
       }
     }
     
-    if (simconf->fullTraj)
+    if ( simconf->fullTraj )
     {
       printf( "CROSS at pos: %f %f %f e: %f ls*u: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, ls );
       printf( "\tLeaving material with average Z %0.1f\n", oldmat);
@@ -359,7 +363,7 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
   int crossed_dir[3] = {0};
   
   double testPos[3]; // test position
-  for (int i=0; i<3; ++i)
+  for ( int i=0; i<3; ++i )
   {
     testPos[i] = pka->pos[i] + ls * pka->dir[i];
     
@@ -411,6 +415,9 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     
     // --- Move ion to plane of first intersection --- //
     moveIonToBoundary ( pka, ls );
+    
+    if ( pka->e < 0 )
+      cout << "broken from wrapped" << endl;
     
     pka->pos[whichone] += 0.1 * pka->dir[whichone]; // update position
     

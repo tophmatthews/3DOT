@@ -64,6 +64,12 @@ void simconfType::read_arg( int argc, char *argv[], bool range_only )
     fissions = atof( argv[4] );
     fueltype = argv[5];
     
+    if (bub_rad > 1000)
+      bit = 1.0;
+    else
+      bit = 0.01;
+    
+    
     if (atof(argv[6]) == 1)
     {
       printf( "Legacy calculation on\n");

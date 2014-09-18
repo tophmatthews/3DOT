@@ -128,7 +128,7 @@ int main(int argc, char *argv[])
   for( int n = 1; n <= simconf->fissions; ++n )
   {
     if (simconf->fullTraj)
-      printf("%t---< New Fission start >---\n");
+      printf("\t---< New Fission start >---\n");
     //--- reset counters ---//
     int escNum = 0;    // # escapees per fission
     int hitNum = 0;    // # bubble hits per fission
