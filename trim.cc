@@ -53,12 +53,10 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     if (simconf->fullTraj)
       printf( "\n\tls: %f\tpos: %f %f %f\tdir: %f %f %f\n", ls,pka->pos[0], pka->pos[1], pka->pos[2], pka->dir[0], pka->dir[1], pka->dir[2]);
-
-    //--- Randomize path length if boundary just crossed or if just spawned ---//
     
     if ( newls!=0 )
     {
-      ls = newls; // subtract extra to push it across from before.
+      ls = newls;
       if (simconf->fullTraj) printf( "\t Continuined from previous oldls: %f newls: %f\n", oldls, newls);
     }
     else if ( pka->ic == 1 ) // if first recoil of atom
@@ -76,17 +74,16 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     ls = (ls > material->minls ? ls : material->minls);
     
     if ( pka->ic == 1)
-      ls -= 1.0; //subtract extra that was used to push it across before
+      ls -= 0.1; //subtract extra that was used to push it across before
     
     //printf("ls: %f material: %f\n", ls, material->az);
+    
+    newls = 0;
     if ( simconf->bub_rad != 0 )
     {
       //--- Check if pka crosses bubble surface ---//
       if ( bubbleCrossFix(pka, sample, ls) )
-      {
-        newls = 0;
         continue; // if crosses bubble boundary, start over
-      }
     
       oldls = ls;
       //--- Check if pka crosses boundary surface ---//
@@ -95,10 +92,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
         newls = oldls - ls;
         continue; // if crosses sample boundary, start over
       }
-      else
-        newls = 0;
     }
-    newls = 0;
     
 //--- TESTING BLOCK ---//
 //    cout << "TESTING STILL" << endl;
@@ -147,11 +141,12 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     // 1000g/kg, 6.022e23/mol, 1.602e-19J/eV, 1e5m/s=1Ang/fs 1.0/0.09822038
     //printf( "se %d  %f [eV]  %f [keV/nm]  %f [nm]\n", pka->ionId, pka->e, see/100.0, pl/10.0 );
 
-    if (simconf->calc_eloss)
+    if ( simconf->calc_eloss )
+    {
       doELoss( pka, material, ls );
-    
-    if (pka->e<0)
-      cout << "broken from hit" << endl;
+      if ( pka->e < 0 )
+        cout << "broken from hit" << endl;
+    }
     
     pka->hit_e.push_back( floor(pka->e) );
     
@@ -252,10 +247,10 @@ void trimBase::doELoss( ionBase *pka, materialBase *material, double ls)
 void trimBase::moveIonToBoundary( ionBase *pka, double ls )
 {
   pka->ic = 0; // reset collision count
-  ls += 1.0;   // add a bit to ensure pka travels across boundary
   
   if (simconf->calc_eloss) doELoss( pka, material, ls );
   
+  ls += 0.1;   // add a bit to ensure pka travels across boundary
   pka->travel += ls; // add travel length to total path length
   
   for (int i = 0; i < 3; ++i)
@@ -316,6 +311,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     {
       fprintf( stderr, "\n Crossed boundary but didn't register new material\n" );
       fprintf( stderr, "pos: %f %f %f e: %f\n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e);
+      exit (EXIT_FAILURE);
     }
     
     if (pka->type == FG)
