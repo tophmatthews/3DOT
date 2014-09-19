@@ -315,7 +315,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     
 
     for (int i = 0; i < 3; ++i)
-      pka->pos[i] += in_or_out * simconf->bit * bub_norm[i]; // update position
+      pka->pos[i] += in_or_out * 1.0 * bub_norm[i]; // update position
     
     materialBase *newmat;
     newmat = sample->lookupMaterial( pka->pos );
