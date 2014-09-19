@@ -446,6 +446,8 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
         pka->dir[i] = dr250() * floor( plane_sign * 2 - 0.5);
       }
     }
+    
+    v_norm(pka->dir);
     //printf("pos: %f %f %f\n",pka->pos[0], pka->pos[1], pka->pos[2]);
     //printf("dir: %f %f %f\n\n",pka->dir[0], pka->dir[1], pka->dir[2]);
   
