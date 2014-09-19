@@ -21,8 +21,6 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
   double rdir[3], perp[3], norm, psi;
   double p1, p2;         // momentum before and after collision
   double r1 = dr250();   // random number
-  double oldls = 0.0;
-  double newls = 0.0;
   
   if (simconf->fullTraj)
   {
@@ -53,13 +51,11 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     if (simconf->fullTraj)
       printf( "\n\tls: %f\tpos: %f %f %f\tdir: %f %f %f\n", ls,pka->pos[0], pka->pos[1], pka->pos[2], pka->dir[0], pka->dir[1], pka->dir[2]);
+
     
-    if ( newls!=0 )
-    {
-      ls = newls;
-      if (simconf->fullTraj) printf( "\t Continuined from previous oldls: %f newls: %f\n", oldls, newls);
-    }
-    else if ( pka->ic == 1 ) // if first recoil of atom
+    ls = (ls > material->minls ? ls : material->minls);
+    
+    if ( pka->ic == 1 ) // if first recoil of atom
     {
       ls = ls * dr250();
       if (simconf->fullTraj) printf( "\tJust entered material. Adjusted ls: %f\n", ls);
@@ -71,27 +67,15 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       exit (EXIT_FAILURE);
     }
     
-    ls = (ls > material->minls ? ls : material->minls);
-    
-//    if ( pka->ic == 1)
-//      ls -= 1.0; //subtract extra that was used to push it across before
-    
-    //printf("ls: %f material: %f\n", ls, material->az);
-    
-    newls = 0;
     if ( simconf->bub_rad != 0 )
     {
       //--- Check if pka crosses bubble surface ---//
       if ( bubbleCrossFix(pka, sample, ls) )
         continue; // if crosses bubble boundary, start over
     
-      oldls = ls;
       //--- Check if pka crosses boundary surface ---//
       if ( boundsCrossFix(pka, sample, ls) )
-      {
-        newls = oldls - ls;
         continue; // if crosses sample boundary, start over
-      }
     }
     
 //--- TESTING BLOCK ---//
@@ -284,9 +268,12 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     u[1] = (- b + sqrtf( d )) / (2.0 * a);
     if (u[0] >= 0 && u[0] <= 1)
     {
-      crossed = true;
-      ls *= u[0];
-      in_or_out = -1;
+      if ( (u[1] - u[0]) * ls > 1.0 ) //discount glancing blows.
+      {
+        crossed = true;
+        ls *= u[0];
+        in_or_out = -1;
+      }
     }
     else if (u[1] >=0 && u[1] <=1)
     {
