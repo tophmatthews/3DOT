@@ -296,7 +296,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     }
   }
   
-  // ---=== If crossed then apply fixed ls ===--- //
+  // ---=== If crossed then apply fixed ls =w==--- //
   if ( crossed )
   {
     pka->punch++; // add to punch count
@@ -327,6 +327,8 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
       fprintf( stderr, "direction: %f\n", in_or_out);
       exit (EXIT_FAILURE);
     }
+
+
     
     if ( pka->type == FG )
     {
@@ -419,7 +421,7 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     if ( pka->e < 0 )
       cout << "broken from wrapped" << endl;
     
-    pka->pos[whichone] += 0.1 * pka->dir[whichone]; // update position
+    pka->pos[whichone] += simconf->bit * pka->dir[whichone]; // update position
     
     ++pka->pass;
     

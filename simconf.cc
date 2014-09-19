@@ -64,10 +64,14 @@ void simconfType::read_arg( int argc, char *argv[], bool range_only )
     fissions = atof( argv[4] );
     fueltype = argv[5];
     
-    if (bub_rad > 1000)
+    if (length > 1000000)
       bit = 1.0;
-    else
+    else if (length > 100000)
+      bit = 0.1;
+    else if (length > 10000)
       bit = 0.01;
+    else
+      bit = 0.001;
     
     
     if (atof(argv[6]) == 1)
