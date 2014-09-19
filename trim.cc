@@ -315,6 +315,9 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
       exit (EXIT_FAILURE);
     }
 
+    if (simconf->calc_eloss) doELoss( pka, material, 1.0 );
+    
+    pka->travel += 1.0;
 
     
     if ( pka->type == FG )
@@ -408,38 +411,42 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     if ( pka->e < 0 )
       cout << "broken from wrapped" << endl;
     
-    //---< White boundary condition test >---\\
-    
-    //Choose coord 0,1,2, is +x, +y, +z
-    int coord = floor(dr250() * 3);
-    
-    //choose which plane, 0 is +, 1 is -
-    //double xxx = floor(dr250() * 2);
-    double plane_sign = floor(dr250() * 2);
-    
-    //printf("coord: %i  plane_sign %f\n", coord, plane_sign);
-    
-    // Set position
-    for (int i = 0; i < 3; ++i)
-    {
-      if (i != coord )
-      {
-        pka->pos[i] = simconf->length * dr250();
-        pka->dir[i] = ( dr250() * 2.0 ) - 1.0;
-      }
-      else
-      {
-        pka->pos[i] = simconf->length - plane_sign * simconf->length; // if 1, then = 0, if 0 then on far surface
-        pka->dir[i] = dr250() * floor( plane_sign * 2 - 0.5);
-      }
-    }
-    
-    v_norm(pka->dir);
-    //printf("pos: %f %f %f\n",pka->pos[0], pka->pos[1], pka->pos[2]);
-    //printf("dir: %f %f %f\n\n",pka->dir[0], pka->dir[1], pka->dir[2]);
+//    //---< White boundary condition test >---\\
+//    
+//    //Choose coord 0,1,2, is +x, +y, +z
+//    int coord = floor(dr250() * 3);
+//    
+//    //choose which plane, 0 is +, 1 is -
+//    //double xxx = floor(dr250() * 2);
+//    double plane_sign = floor(dr250() * 2);
+//    
+//    //printf("coord: %i  plane_sign %f\n", coord, plane_sign);
+//    
+//    // Set position
+//    for (int i = 0; i < 3; ++i)
+//    {
+//      if (i != coord )
+//      {
+//        pka->pos[i] = simconf->length * dr250();
+//        pka->dir[i] = ( dr250() * 2.0 ) - 1.0;
+//      }
+//      else
+//      {
+//        pka->pos[i] = simconf->length - plane_sign * simconf->length; // if 1, then = 0, if 0 then on far surface
+//        pka->dir[i] = dr250() * floor( plane_sign * 2 - 0.5);
+//      }
+//    }
+//    
+//    v_norm(pka->dir);
+//    //printf("pos: %f %f %f\n",pka->pos[0], pka->pos[1], pka->pos[2]);
+//    //printf("dir: %f %f %f\n\n",pka->dir[0], pka->dir[1], pka->dir[2]);
   
     
-    //pka->pos[whichone] += simconf->bit * pka->dir[whichone]; // update position
+    pka->pos[whichone] += simconf->bit * pka->dir[whichone]; // update position
+    
+    if (simconf->calc_eloss) doELoss( pka, material, simconf->bit );
+    
+    pka->travel += simconf->bit;
     
     ++pka->pass;
     
