@@ -589,11 +589,11 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
       {
         // first guess at ion c.p.a.
         double r = b;
-        double rr = -2.7 * logf( eps * b );
+        double rr = -2.7 * log( eps * b );
         if( rr >= b )
         {
           r = rr;
-          rr = -2.7 * logf( eps * rr );
+          rr = -2.7 * log( eps * rr );
           if( rr >= b ) r = rr;
         }
         
@@ -708,11 +708,11 @@ double trimBase::calcTestS2(ionBase *pka, materialBase *material, double p, int 
       {
         // first guess at ion c.p.a.
         double r = b;
-        double rr = -2.7 * logf( eps * b );
+        double rr = -2.7 * log( eps * b );
         if( rr >= b )
         {
           r = rr;
-          rr = -2.7 * logf( eps * rr );
+          rr = -2.7 * log( eps * rr );
           if( rr >= b ) r = rr;
         }
         

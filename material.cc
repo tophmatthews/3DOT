@@ -115,7 +115,7 @@ double materialBase::rpstop( int z2p, double e )
   sl = ( simconf->pcoef[z2][0] * pow( pe, simconf->pcoef[z2][1] ) ) +
        ( simconf->pcoef[z2][2] * pow( pe, simconf->pcoef[z2][3] ) );
   sh = simconf->pcoef[z2][4] / pow( pe, simconf->pcoef[z2][5] ) * 
-       logf( simconf->pcoef[z2][6] / pe + simconf->pcoef[z2][7] * pe );
+       log( simconf->pcoef[z2][6] / pe + simconf->pcoef[z2][7] * pe );
   sp = sl * sh / (sl + sh );
   if( e <= pe0 )
   {
@@ -199,10 +199,10 @@ double materialBase::rstop( const ionBase *ion, int z2 )
     
     // zeta is gamma kinda, not sure what term in last paraentheses is [SRIM eq. 3-33]
     // note vfermi = v_f / v_0
-    zeta = q + ( 1.0 / ( 2.0 * vfermi*vfermi ) ) * ( 1.0 - q ) * logf( 1.0 + sqr( 4.0 * l * vfermi / 1.919  ) ); //kf = 1.919 from (Brandt 1982)
+    zeta = q + ( 1.0 / ( 2.0 * vfermi*vfermi ) ) * ( 1.0 - q ) * log( 1.0 + sqr( 4.0 * l * vfermi / 1.919  ) ); //kf = 1.919 from (Brandt 1982)
 
     // add z1^3 effect
-    a = -sqr( 7.6 - fmax( 0.0, logf( e ) ) ); // a is redefined here!!!
+    a = -sqr( 7.6 - fmax( 0.0, log( e ) ) ); // a is redefined here!!!
     zeta *= 1.0 + ( 1.0 / (fz1*fz1) ) * ( 0.18 + 0.0015 * fz2 ) * expf( a );
 
     if( yr <= fmax( yrmin, vrmin / pow( fz1, 0.6667 ) ) ) // missing third test of if yr<= z1^(2/3)
