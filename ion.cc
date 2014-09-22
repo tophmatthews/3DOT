@@ -168,16 +168,3 @@ void ionBase::prep_FF()
   pot = simconf->pot_ff;
 }
 
-void ionBase::calcLs()
-{
-  using namespace std;
-  double latp = simconf->latp;
-  
-  double testPos[3];
-  for ( int i = 0; i<3; ++i)
-  {
-    testPos[i] = pos[i]; // copy value over
-    testPos[i] += dir[i] * latp;
-  }
-  // move ion one latp
-}

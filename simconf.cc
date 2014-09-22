@@ -64,14 +64,11 @@ void simconfType::read_arg( int argc, char *argv[], bool range_only )
     fissions = atof( argv[4] );
     fueltype = argv[5];
     
-    if (length > 1000000)
-      bit = 1.0;
-    else if (length > 100000)
-      bit = 0.1;
-    else if (length > 10000)
-      bit = 0.01;
-    else
-      bit = 0.001;
+    if ( bub_rad * 2 > length )
+    {
+      fprintf( stderr, "simconf.cc: box size too small");
+      exit (EXIT_FAILURE);
+    }
     
     
     if (atof(argv[6]) == 1)
@@ -171,14 +168,5 @@ void simconfType::read_scoef()
     scoef[i].radius /= 100;
   }
   fclose( sf );
-  
-//  snprintf( fname, 500, "%s/ELRAD.dat", DATA_DIR );
-//  sf = fopen( fname, "rt" );
-//  int z;
-//  for ( int i = 0; i < 92; ++i )
-//  {
-//    fscanf( sf, "%*d %s %s %d\n", scoef[i].sym, scoef[i].name, scoef[i].radius );
-//  }
-//  fclose( sf );
 }
 

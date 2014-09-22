@@ -19,7 +19,6 @@ struct simconfType {
   double mdmin, mdmax; // energy ranges for ion selection
   long int ionId;
   double latp;
-  double bit; // extra added to cross boundary
   
   double spawn_min_e;
   double ion_min_e;

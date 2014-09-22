@@ -52,7 +52,6 @@ struct ionBase {
   void reset();
   double RangeInFuel( std::string fueltype );
   virtual void prep_FF();
-  virtual void calcLs();
 };
 
 #endif

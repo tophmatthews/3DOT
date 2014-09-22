@@ -203,7 +203,7 @@ int main(int argc, char *argv[])
         if (simconf->fullTraj)
           printf("Range: %f \tcrows: %f \tpath: %f\n",pka->pos[0], crow, pka->travel);
         
-        if( (n % 1000) == 0 )
+        if( (n % 10) == 0 )
         {
           rangeavg = 0;
           for(std::vector<double>::iterator j=range.begin();j!=range.end();++j) rangeavg += *j;

@@ -448,12 +448,7 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     if ( simconf->fullTraj )
       printf( "WRAPPED at pos: %f %f %f e: %f ls: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, ls );
     
-    if (pka->type == LAT)
-    {
-      terminate = true;
-      return crossed;
-    }
-    else if ( pka->type != FG || !simconf->AddAndKill )
+    if ( pka->type != FG || !simconf->AddAndKill )
     {
       for ( int i=0; i<3; ++i)
       { // if greater than or less than
