@@ -72,7 +72,7 @@ void materialBase::average( const ionBase *pka )
 
   // fd and kd determine how much recoil energy goes into el. loss and vaccancies
   fd = pow( 0.01 * az, -7.0 / 3.0 );
-  kd = pow( 0.1334 * az, 2.0 / 3.0 ) / sqrtf( am ); 
+  kd = pow( 0.1334 * az, 2.0 / 3.0 ) / sqrt( am );
 
   for( int i = 0; i < element.size(); i++ ) 
   {
@@ -167,7 +167,7 @@ double materialBase::rstop( const ionBase *ion, int z2 )
   {
     yrmin = 0.13;
     vrmin = 1.0;
-    v = sqrtf( 2 * e / v2_b) / vfermi; // this gives v_ion/(vfermi * v_b) = v_ion/v_f (since vfermi = v/v_0
+    v = sqrt( 2 * e / v2_b) / vfermi; // this gives v_ion/(vfermi * v_b) = v_ion/v_f (since vfermi = v/v_0
 
     if( v >= 1.0 )
       vr = v * vfermi * ( 1.0 + 1.0 / ( 5.0 * v*v ) ); // [SRIM eq 3-34] gives v_rel / v_0
@@ -209,7 +209,7 @@ double materialBase::rstop( const ionBase *ion, int z2 )
     {
       // calculate velocity stopping for  yr < yrmin
       vrmin = fmax( vrmin, yrmin * pow( fz1, 0.6667 ) ); // vrmin redefined here!!! 1 previously, now 1 or v_rel / v_0
-      vmin = 0.5 * ( vrmin + sqrtf( fmax( 0.0, vrmin*vrmin - 0.8 * vfermi*vfermi ) ) );
+      vmin = 0.5 * ( vrmin + sqrt( fmax( 0.0, vrmin*vrmin - 0.8 * vfermi*vfermi ) ) );
       eee = v2_b / 2 * vmin*vmin; // kev/amu
       sp = rpstop( z2, eee );
 

@@ -26,7 +26,7 @@ inline double v_dot( const double *a1, const double *a2 )
 
 inline void v_norm( double *a1, double b = 1.0 ) // in-place normalize to b ( = 1.0 default )
 {
-    v_scale( a1, b / sqrtf( v_dot( a1, a1) ) );
+    v_scale( a1, b / sqrt( v_dot( a1, a1) ) );
 }
 
 inline double sqr( double a ) { return a*a; }
@@ -61,7 +61,7 @@ inline bool inbubble( double bub_cen[3], double pos[3], double r )
   double a;
   for( int i = 0; i < 3; i++ )
     a += sqr(bub_cen[i]/2.0 - pos[i]);
-  a = sqrtf(a);
+  a = sqrt(a);
   if( a < r ) return true;
   else return false;
 }
@@ -88,7 +88,7 @@ inline double stdev( std::vector<int> x )
   double b = 0;
   for( int i=0; i < x.size(); i++)
     b += sqr( x.at(i) - a );
-  return sqrtf( b / (x.size() - 1) );
+  return sqrt( b / (x.size() - 1) );
 }
 
 inline double stdev( std::vector<long int> x )
@@ -97,7 +97,7 @@ inline double stdev( std::vector<long int> x )
   double b = 0;
   for( int i=0; i < x.size(); i++)
     b += sqr( x.at(i) - a );
-  return sqrtf( b / (x.size() - 1) );
+  return sqrt( b / (x.size() - 1) );
 }
 
 #endif

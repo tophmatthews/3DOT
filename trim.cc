@@ -114,7 +114,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     s2 = calcS2( pka, material ); // sin^2(theta_c/2)
     c2 = 1.0 - s2;                // cos^2(theta_c/2)
     ct = 2.0 * c2 - 1.0;          // cos(theta_c)
-    st = sqrtf( 1.0 - ct*ct );    // sin(theta_c)
+    st = sqrt( 1.0 - ct*ct );    // sin(theta_c)
     
     // energy transferred to recoil atom
     den = element->ec * s2 * pka->e; // T=gamma*E*sin^2(theta_c/2). gamma*E = Tmax
@@ -134,11 +134,11 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     
     pka->hit_e.push_back( floor(pka->e) );
     
-    p1 = sqrtf( 2.0 * pka->m1 * pka->e ); // momentum before collision
+    p1 = sqrt( 2.0 * pka->m1 * pka->e ); // momentum before collision
     pka->e -= den;                        // subtract energy lost in collision
     if (pka->e < 0.0)
       pka->e = 0.0;
-    p2 = sqrtf( 2.0 * pka->m1 * pka->e ); // momentum after collision
+    p2 = sqrt( 2.0 * pka->m1 * pka->e ); // momentum after collision
 
     pka->travel += ls; // add travel length to total pka path length
 
@@ -161,7 +161,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
       for (int i = 0; i < 3; ++i)
         rdir[i] = dr250() - 0.5;
       v_cross( pka->dir, rdir, perp ); // takes 1st and 2nd, returns third
-      norm = sqrtf( v_dot( perp, perp) );
+      norm = sqrt( v_dot( perp, perp) );
     }
     while (norm == 0.0);
     
@@ -263,8 +263,8 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
   if (d > 0)
   {
     double u[2];
-    u[0] = (- b - sqrtf( d )) / (2.0 * a);
-    u[1] = (- b + sqrtf( d )) / (2.0 * a);
+    u[0] = (- b - sqrt( d )) / (2.0 * a);
+    u[1] = (- b + sqrt( d )) / (2.0 * a);
     if (u[0] >= 0 && u[0] <= 1)
     {
       if ( (u[1] - u[0]) * ls > 1.0 ) //discount glancing blows.
@@ -506,8 +506,8 @@ void trimBase::setPmax(ionBase *pka, materialBase *material)
     case TRIM:
     {// setup avg max. impact parameter
       double epsm = pka->e * material->f; // reduced energy, epsilon
-      double eeg = sqrtf( epsm * material->epsdg ); // chi (newtrim eq 7-41)
-      material->pmax = material->a / ( eeg + sqrtf( eeg ) + 0.125 * pow( eeg, 0.1 ) ); // sets pmax (newtrim 7-40)
+      double eeg = sqrt( epsm * material->epsdg ); // chi (newtrim eq 7-41)
+      material->pmax = material->a / ( eeg + sqrt( eeg ) + 0.125 * pow( eeg, 0.1 ) ); // sets pmax (newtrim 7-40)
       break;
     }
     case RUTHERFORD:
@@ -544,7 +544,7 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
   // choose impact parameter: pmax set in trimBase::calcLs.
   if (simconf->monolayer)
     material->pmax = 2.17;
-  double p = material->pmax * sqrtf( r2 ); // random p, weighted towards pmax
+  double p = material->pmax * sqrt( r2 ); // random p, weighted towards pmax
   
   // determine which atom in the material will be hit
   int nn;
@@ -624,15 +624,15 @@ double trimBase::calcS2(ionBase *pka, materialBase *material)
         } while( fabs( q / r ) > 0.001 ); // Convergence criteria
         
         double roc = -2.0 * ( eps - v ) / v1; // R_c [SRIM eq. 7-7], calculated from 7-4
-        double sqe = sqrtf( eps ); // square root of epsilon
+        double sqe = sqrt( eps ); // square root of epsilon
         
         // b = p/a [SRIM eq. 7-7]
         // 5-parameter magic scattering calculation (universal pot.)
         double cc = ( u_c2 + sqe ) / ( u_c3 + sqe ); // [SRIM eq. 7-12] beta
         double aa = 2.0 * eps * ( 1.0 + ( u_c1 / sqe ) ) * pow( b, cc ); // [SRIM eq. 7-11] A
         
-        double ff = ( sqrtf( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) );
-        //ff = 1 / ( sqrtf( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) ); // [SRIM eq. 7-11] G
+        double ff = ( sqrt( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) );
+        //ff = 1 / ( sqrt( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) ); // [SRIM eq. 7-11] G
         
         double delta = ( r - b ) * aa * ff / ( ff + 1.0 );
         //delta =( r - b ) * aa / ( ff + 1.0 ); // [SRIM eq. 7-10]
@@ -658,7 +658,7 @@ double trimBase::calcTestS2(ionBase *pka, materialBase *material, double p, int 
   double hh = dr250();
   
   // choose impact parameter: pmax set in trimBase::calcLs.
-  //double p = material->pmax * sqrtf( r2 ); // random p, weighted towards pmax
+  //double p = material->pmax * sqrt( r2 ); // random p, weighted towards pmax
 
   // determine which atom in the material will be hit
   //int nn;
@@ -743,15 +743,15 @@ double trimBase::calcTestS2(ionBase *pka, materialBase *material, double p, int 
         } while( fabs( q / r ) > 0.001 ); // Convergence criteria
         
         double roc = -2.0 * ( eps - v ) / v1; // R_c [SRIM eq. 7-7], calculated from 7-4
-        double sqe = sqrtf( eps ); // square root of epsilon
+        double sqe = sqrt( eps ); // square root of epsilon
         
         // b = p/a [SRIM eq. 7-7]
         // 5-parameter magic scattering calculation (universal pot.)
         double cc = ( u_c2 + sqe ) / ( u_c3 + sqe ); // [SRIM eq. 7-12] beta
         double aa = 2.0 * eps * ( 1.0 + ( u_c1 / sqe ) ) * pow( b, cc ); // [SRIM eq. 7-11] A
         
-        double ff = ( sqrtf( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) );
-        //ff = 1 / ( sqrtf( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) ); // [SRIM eq. 7-11] G
+        double ff = ( sqrt( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) );
+        //ff = 1 / ( sqrt( aa*aa + 1.0 ) - aa ) * ( ( u_c4 + eps ) / ( u_c5 + eps ) ); // [SRIM eq. 7-11] G
         
         double delta = ( r - b ) * aa * ff / ( ff + 1.0 );
         //delta =( r - b ) * aa / ( ff + 1.0 ); // [SRIM eq. 7-10]

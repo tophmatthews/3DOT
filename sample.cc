@@ -164,7 +164,7 @@ void sampleBase::make_FF( std::queue<ionBase*> &recoils, int fsn_num )
       ff1->dir[i] = dr250() - 0.5;
     norm = v_dot( ff1->dir, ff1->dir );
   } while( norm <= 0.0001 );
-  v_scale( ff1->dir, 1.0 / sqrtf( norm ) );
+  v_scale( ff1->dir, 1.0 / sqrt( norm ) );
   
   // random origin
   double R;

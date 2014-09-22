@@ -115,7 +115,7 @@ void sampleClusters::initSpatialhash( int x, int y, int z )
     kd[i] = w[i] / double( kn[i] );
     sd += kd[i];
   }
-  sd = 0.5 * sqrtf( sd );
+  sd = 0.5 * sqrt( sd );
   cmr = 0.0;
 }
 
