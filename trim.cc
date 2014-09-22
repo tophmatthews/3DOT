@@ -462,7 +462,6 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
       
       return crossed;
     }
-
     else
     {
       if (simconf->fullTraj)
