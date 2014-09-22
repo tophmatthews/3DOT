@@ -314,11 +314,6 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
       fprintf( stderr, "direction: %f\n", in_or_out);
       exit (EXIT_FAILURE);
     }
-
-    if (simconf->calc_eloss) doELoss( pka, material, 1.0 );
-    
-    //pka->travel += 1.0;
-
     
     if ( pka->type == FG )
     {
@@ -448,17 +443,17 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     
     pka->pos[whichone] += 0.0000001 * pka->dir[whichone]; // update position
     
-    //if (simconf->calc_eloss) doELoss( pka, material, simconf->bit );
-    
-    //pka->travel += simconf->bit;
-    
     ++pka->pass;
     
     if ( simconf->fullTraj )
       printf( "WRAPPED at pos: %f %f %f e: %f ls: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, ls );
     
-    //if ( pka->type == FF )
-    if ( pka->type != FG || !simconf->AddAndKill )
+    if (pka->type == LAT)
+    {
+      terminate = true;
+      return crossed;
+    }
+    else if ( pka->type != FG || !simconf->AddAndKill )
     {
       for ( int i=0; i<3; ++i)
       { // if greater than or less than
@@ -467,18 +462,12 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
           pka->pos[i] -= pka->pos[i] / fabs(pka->pos[i]) * sample->w[i];
         }
       }
-      
       if ( simconf->fullTraj )
         printf( "\tNow at pos: %f %f %f\n", pka->pos[0], pka->pos[1], pka->pos[2] );
       
       return crossed;
     }
-    else if (pka->type == LAT)
-    {
-      terminate = true;
-      cout << "yes" << endl;
-      return crossed;
-    }
+
     else
     {
       if (simconf->fullTraj)
