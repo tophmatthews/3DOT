@@ -24,7 +24,7 @@ simconfType::simconfType()
   fg_min_e = 5.0;
   ion_min_e = 300.0;
   
-  fullTraj    = false; // output full trajectories
+  fullTraj    = true; // output full trajectories
   makeRecoils = true;  // make recoils
   BoundaryFix = true;  //
   AddAndKill  = true;  // range estimation for gas atoms that reach box boundary

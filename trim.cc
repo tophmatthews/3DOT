@@ -27,6 +27,7 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
     printf( "\n+++=== ION START pos: %f %f %f ===+++\n", pka->pos[0], pka->pos[1], pka->pos[2]);
     printf( "\tion z: %i  e: %f \n", pka->z1, pka->e);
     printf( "\tdir: %f %f %f\n", pka->dir[0], pka->dir[1], pka->dir[2]);
+    printf( "\ttype: %i (0 is FF, 1 is LAT, 2 is FG)\n", pka->type);
     printf( "\tpot: %i (0 is NONE, 1 is HARDSPHERE, 2 is RUTHERFORD, 3 is TRIM\n", pka->pot);
   }
   
@@ -301,7 +302,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     
 
     for (int i = 0; i < 3; ++i)
-      pka->pos[i] += in_or_out * 1.0 * bub_norm[i]; // update position
+      pka->pos[i] += in_or_out * 0.00000001 * bub_norm[i]; // update position
     
     materialBase *newmat;
     newmat = sample->lookupMaterial( pka->pos );
@@ -316,7 +317,7 @@ bool trimBase::bubbleCrossFix( ionBase *pka, sampleBase *sample, double &ls )
 
     if (simconf->calc_eloss) doELoss( pka, material, 1.0 );
     
-    pka->travel += 1.0;
+    //pka->travel += 1.0;
 
     
     if ( pka->type == FG )
@@ -445,11 +446,11 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
 //    //printf("dir: %f %f %f\n\n",pka->dir[0], pka->dir[1], pka->dir[2]);
   
     
-    pka->pos[whichone] += simconf->bit * pka->dir[whichone]; // update position
+    pka->pos[whichone] += 0.0000001 * pka->dir[whichone]; // update position
     
-    if (simconf->calc_eloss) doELoss( pka, material, simconf->bit );
+    //if (simconf->calc_eloss) doELoss( pka, material, simconf->bit );
     
-    pka->travel += simconf->bit;
+    //pka->travel += simconf->bit;
     
     ++pka->pass;
     
@@ -463,13 +464,19 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
       { // if greater than or less than
         if ( pka->pos[i] < 0 || pka->pos[i] > sample->w[i] )
         {
-          pka->pos[i] -= pka->pos[i] / abs(pka->pos[i]) * sample->w[i];
+          pka->pos[i] -= pka->pos[i] / fabs(pka->pos[i]) * sample->w[i];
         }
       }
       
       if ( simconf->fullTraj )
         printf( "\tNow at pos: %f %f %f\n", pka->pos[0], pka->pos[1], pka->pos[2] );
       
+      return crossed;
+    }
+    else if (pka->type == LAT)
+    {
+      terminate = true;
+      cout << "yes" << endl;
       return crossed;
     }
     else
