@@ -213,14 +213,12 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 
 void trimBase::doELoss( ionBase *pka, materialBase *material, double ls)
 {
-  double olde = pka->e;
-  double rstop = material->getrstop( pka );
   pka->e -= ls * material->getrstop( pka );
   if (pka->e < 0.0)
   {
     fprintf( stderr, "\n electronic energy loss stopped the ion. Broken recoil!!\n" );
-    fprintf( stderr, "pos: %f %f %f  olde: %f newe: %f\n", pka->pos[0], pka->pos[1], pka->pos[2], olde, pka->e);
-    fprintf( stderr, "ls %f getrstop %f \n", ls, rstop );
+    fprintf( stderr, "pos: %f %f %f  newe: %f\n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e);
+    fprintf( stderr, "ls %f \n", ls);
     fprintf( stderr, "az: %f\n", material->az);
     exit (EXIT_FAILURE);
   }
@@ -232,7 +230,8 @@ void trimBase::moveIonToBoundary( ionBase *pka, double ls )
 {
   pka->ic = 0; // reset collision count
   
-  if (simconf->calc_eloss) doELoss( pka, material, ls );
+  if (simconf->calc_eloss)
+    doELoss( pka, material, ls );
   
   pka->travel += ls; // add travel length to total path length
   
@@ -383,7 +382,7 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
   else
   { // --- Calculate distance to planes --- //
     if ( boundsCrossFix_test )
-      cout << "hey crossed! " << crossed_dir[0] << " " << crossed_dir[1] << " " << crossed_dir[2] << endl;
+      cout << "crossed! " << crossed_dir[0] << " " << crossed_dir[1] << " " << crossed_dir[2] << endl;
     double d[3] = { ls }; //initially set all distances to path length. can only get smaller from here
     int whichone = -1;
     for ( int i=0; i<3; ++i )
@@ -393,12 +392,16 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
         double p_0 = ( sample->w[i] + crossed_dir[i] * sample->w[i] )/2.0;
         d[i] = ( p_0 - pka->pos[i] ) / pka->dir[i];
         if ( boundsCrossFix_test ) cout << "i: " << i << " d[i]: " << d[i] << endl;
-        ls = ( ls < d[i] ? ls : d[i] );
-        whichone = ( ls < d[i] ? whichone : i );
+        if ( ls > d[i] )
+        {
+          ls = d[i];
+          whichone = i;
+        }
       }
     }
     if (boundsCrossFix_test)
       printf("the fix is for the %i direction. pos: %f %f %f", whichone, pka->pos[0], pka->pos[1], pka->pos[2]);
+    
     if ( whichone < 0)
     {
       printf("Trim.cc: something is wrong with int whichone");
@@ -453,9 +456,9 @@ bool trimBase::boundsCrossFix( ionBase *pka, sampleBase *sample, double &ls )
     if ( simconf->fullTraj )
       printf( "WRAPPED at pos: %f %f %f e: %f ls: %f \n", pka->pos[0], pka->pos[1], pka->pos[2], pka->e, ls );
     
-    if ( pka->type == FF )
-    //if ( pka->type != FG || !simconf->AddAndKill )
-    {// --- Wrap particle and check fix only occurs once --- //
+    //if ( pka->type == FF )
+    if ( pka->type != FG || !simconf->AddAndKill )
+    {
       for ( int i=0; i<3; ++i)
       { // if greater than or less than
         if ( pka->pos[i] < 0 || pka->pos[i] > sample->w[i] )
