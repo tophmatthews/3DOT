@@ -12,7 +12,7 @@ struct bubbleBase {
   double _rad;  // bubble radius [Ang]
   double _temp; // temperature [K]
   
-  enum eos {VDW, RONCHI};
+  enum eos {CONSTANT, VDW, RONCHI};
   
   bubbleBase();
   

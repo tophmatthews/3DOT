@@ -79,9 +79,7 @@ int main(int argc, char *argv[])
   
   //--- initialze bubble structure. ---//
   bubbleBase *bubble = new bubbleBase();
-  sample->make_fg( sample, bubble->rho, false );
-  fprintf( stderr, "Bubble built with density %f [g/cc].\n", bubble->rho );
-
+  sample->make_fg( sample, bubble->rho, true );
 
   //--- Output file creation ---//
   FILE * hitFile = NULL;
