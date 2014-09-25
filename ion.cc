@@ -34,6 +34,7 @@ void ionBase::reset()
   Ehit = 0.0;
   Eout = 0.0;
   travel = 0.0;
+  elec_loss = 0.0;
   
   if ( type == FG)
     ef = simconf->fg_min_e;

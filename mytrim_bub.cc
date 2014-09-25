@@ -114,8 +114,13 @@ int main(int argc, char *argv[])
     rangeFile = fopen( fname, "wt");
   }
   
-  //--- Create FIFO for recoils --//
+  //--- Create FIFO for recoils ---//
   queue<ionBase*> recoils;
+  
+  //--- Create ELoss vectors ---//
+  vector<double> FF_eloss;
+  vector<double> FG_eloss;
+  vector<double> U_eloss;
   
   printf("Setup complete!\n");
     
@@ -153,6 +158,7 @@ int main(int argc, char *argv[])
         sample->averages( pka ); // pre-calculations
 
         //--- pre-cascade ion analysis/processing ---//
+        double starte = pka->e;
         
         // Distance from center to initial location
         if ( pka->type == FG )
@@ -162,6 +168,16 @@ int main(int argc, char *argv[])
         trim->trim( pka, recoils );
       
         //--- post-cascade ion analysis/processing ---//
+        
+        if ( simconf->save_eloss )
+        {
+          if ( pka->type == FG )
+            FG_eloss.push_back( pka->elec_loss/starte );
+          else if ( pka->type == FF )
+            FF_eloss.push_back( pka->elec_loss/starte );
+          else if ( pka->z1 > 90 )
+            U_eloss.push_back( pka->elec_loss/starte );
+        }
         
         // hitFile info
         if( save_hitFile && pka->type == FG)
@@ -233,7 +249,14 @@ int main(int argc, char *argv[])
   if ( save_fsnFile ) fclose( fsnFile );
   if ( save_rangeFile ) fclose( rangeFile );
   
-  printf( "==+== %s.%0.f-%0.f Finished ==+==\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
+  printf( "==+== %s.%0.f-%0.f Finished ==+==\n\n", simconf->run_name.c_str(), simconf->bub_rad, simconf->length );
+  if ( simconf->save_eloss )
+  {
+    double FG_eloss_avg = v_avg( FG_eloss );
+    double FF_eloss_avg = v_avg( FF_eloss );
+    double U_eloss_avg  = v_avg( U_eloss );
+    printf("Percent ELosses. FG: %.1f%%  FF: %.1f%%  U: %.1f%%\n", FG_eloss_avg*100, FF_eloss_avg*100, U_eloss_avg*100);
+  }
   printf( "Simulation time [s]:\t%.0f\n", difftime(tend,tstart));
   return EXIT_SUCCESS;
 }

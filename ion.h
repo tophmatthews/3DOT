@@ -29,6 +29,8 @@ struct ionBase {
   int fam_fuel, fam_fg, fam_parent;
   potentials pot;
   
+  double elec_loss;
+  
   std::vector<int> famtree; // family tree of ion
   
   std::vector<long> hit_e; // energies of each hit

@@ -29,6 +29,7 @@ simconfType::simconfType()
   BoundaryFix = true;  //
   AddAndKill  = true;  // range estimation for gas atoms that reach box boundary
   calc_eloss  = true;
+  save_eloss  = false;
   monolayer   = false;
   
   // Declare potentials for atoms (NONE, HARDSPHERE, RUTHERFORD, TRIM)
@@ -79,6 +80,12 @@ void simconfType::read_arg( int argc, char *argv[], bool range_only )
       pot_lat = HARDSPHERE;
       calc_eloss = false;
     }
+    else if ( atof(argv[6]) == 2 )
+    {
+      printf( "Electronic energy losses turned off")
+      calc_eloss = false;
+    }
+    
     simconf->bub_model = atof( argv[7] );
   }
   else

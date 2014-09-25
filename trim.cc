@@ -214,7 +214,9 @@ void trimBase::trim( ionBase *pka_, queue<ionBase*> &recoils)
 
 void trimBase::doELoss( ionBase *pka, materialBase *material, double ls)
 {
-  pka->e -= ls * material->getrstop( pka );
+  double loss = ls * material->getrstop( pka );
+  pka->e -= loss;
+  pka->elec_loss += loss;
   if (pka->e < 0.0)
   {
     fprintf( stderr, "\n electronic energy loss stopped the ion. Broken recoil!!\n" );

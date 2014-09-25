@@ -100,5 +100,13 @@ inline double stdev( std::vector<long int> x )
   return sqrt( b / (x.size() - 1) );
 }
 
+inline double v_avg( std::vector<double> v)
+{
+  double v_avg = 0;
+  for(std::vector<double>::iterator j=v.begin();j!=v.end();++j) v_avg += *j;
+  v_avg /= v.size();
+  return v_avg;
+}
+
 #endif
 

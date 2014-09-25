@@ -39,6 +39,7 @@ struct simconfType {
   bool BoundaryFix;
   bool AddAndKill;
   bool calc_eloss;
+  bool save_eloss;
   bool monolayer;
   
   potentials pot_ff, pot_fg, pot_lat;
