@@ -82,7 +82,7 @@ void simconfType::read_arg( int argc, char *argv[], bool range_only )
     }
     else if ( atof(argv[6]) == 2 )
     {
-      printf( "Electronic energy losses turned off")
+      printf( "Electronic energy losses turned off");
       calc_eloss = false;
     }
     
