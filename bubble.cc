@@ -4,9 +4,9 @@ bubbleBase::bubbleBase()
 {
   _rad = simconf->bub_rad;
   if ( simconf->bub_model > 30 )
-    _temp = 2000;
-  else if ( simconf->bub_model > 20 )
     _temp = 1500;
+  else if ( simconf->bub_model > 20 )
+    _temp = 2000;
   else
     _temp = 1000;
   
